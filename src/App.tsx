@@ -9,7 +9,7 @@ export default function App() {
 
   return (
     <div>
-      <h1>VPN APP</h1>
+      <h1>VPN APP test</h1>
 
       <pre>{JSON.stringify(user, null, 2)}</pre>
 
