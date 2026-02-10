@@ -3,7 +3,7 @@ export default function Header() {
         <div className="header">
             <div className="container">
                 <div className="header__inner">
-                    <img className="header__logo" src="../public/logo.png" alt="logo" />
+                    <img className="header__logo" src="../../public/logo.png" alt="logo" />
                 </div>
             </div>
         </div>
