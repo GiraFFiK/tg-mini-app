@@ -29,7 +29,7 @@ html, body {
 
 
 
-.balance__info {
+/* .balance__info {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -60,7 +60,7 @@ html, body {
   border-radius: 10px;
   border: 1px solid;
   height: 30px;
-}
+} */
 
 .button {
   border: 1px solid;
@@ -71,7 +71,7 @@ html, body {
 
 
 
-.nav-bottom {
+/* .nav-bottom {
   position: fixed;
   bottom: 0;
   left: 0;
@@ -144,7 +144,7 @@ html, body {
   font-weight: 600;
 }
 
-/* ===== Liquid Glass Slider ===== */
+
 .nav-slider.liquid-glass {
   position: absolute;
   top: 50%;
@@ -158,7 +158,7 @@ html, body {
   transition: left 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   z-index: 1;
 
-  /* Liquid Glass эффект */
+
   background: radial-gradient(circle at 30% 30%,
       rgba(255, 255, 255, 0.9),
       rgba(109, 93, 252, 0.8) 60%,
@@ -182,7 +182,7 @@ html, body {
   transition: transform 0.2s ease;
 }
 
-/* Внутреннее свечение */
+
 .nav-slider.liquid-glass::before {
   content: '';
   position: absolute;
@@ -198,7 +198,7 @@ html, body {
   animation: liquidShimmer 3s ease-in-out infinite;
 }
 
-/* Блик */
+
 .nav-slider.liquid-glass::after {
   content: '';
   position: absolute;
@@ -213,7 +213,7 @@ html, body {
   animation: liquidGlow 3s ease-in-out infinite;
 }
 
-/* Пузырьки */
+
 .liquid-glass-bubble {
   position: absolute;
   width: 8px;
@@ -224,7 +224,7 @@ html, body {
   animation: bubbleFloat 4s ease-in-out infinite;
 }
 
-/* Анимации Liquid Glass */
+
 @keyframes liquidPulse {
   0%, 100% {
     box-shadow:
@@ -290,7 +290,7 @@ html, body {
   }
 }
 
-/* Градиентный фон для активных элементов */
+
 .nav-item.active .nav-icon {
   color: transparent;
   background: linear-gradient(135deg, #fff, #e0e0ff);
@@ -298,7 +298,7 @@ html, body {
   background-clip: text;
 }
 
-/* Эффект ряби при перетаскивании */
+
 .nav-slider.liquid-glass.dragging {
   animation: liquidDrag 0.5s ease-in-out infinite alternate;
 }
@@ -327,7 +327,6 @@ html, body {
   }
 }
 
-/* След от перетаскивания */
 .nav-slider.liquid-glass.dragging::before {
   animation: liquidTrail 1s ease-out infinite;
 }
@@ -372,7 +371,7 @@ html, body {
       inset 0 -5px 15px rgba(0, 0, 0, 0.2),
       inset 0 5px 15px rgba(255, 255, 255, 0.6);
   }
-}
+} */
 
 /* Контент страниц */
 .page-content {
@@ -437,4 +436,136 @@ html, body {
 .currency-item.active {
   background: rgba(109, 93, 252, 0.2);
   border: 1px solid #6d5dfc;
+}
+
+/* Светлая тема */
+.light-theme {
+  --bg-primary: #f5f5f7;
+  --bg-secondary: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.9);
+  --text-primary: #1a1b2e;
+  --text-secondary: #4a4b5e;
+  --text-muted: #6b6c7e;
+  --border-color: rgba(0, 0, 0, 0.08);
+  --shadow-color: rgba(0, 0, 0, 0.05);
+  --accent-gradient: linear-gradient(135deg, #6d5dfc, #9f7aea);
+  --card-bg: rgba(255, 255, 255, 0.8);
+}
+
+/* Темная тема (по умолчанию) */
+.dark-theme, body:not(.light-theme) {
+  --bg-primary: #0A0B1A;
+  --bg-secondary: #1A1B2E;
+  --bg-card: rgba(18, 19, 33, 0.7);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.9);
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --shadow-color: rgba(0, 0, 0, 0.2);
+  --accent-gradient: linear-gradient(135deg, #6d5dfc, #9f7aea);
+  --card-bg: rgba(18, 19, 33, 0.7);
+}
+
+/* Применяем переменные к элементам */
+html, body {
+  font-family: 'Bitter', sans-serif;
+  font-weight: 400;
+  line-height: 160%;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.wrapper {
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  padding-bottom: 90px;
+}
+
+.container {
+  max-width: 1160px;
+  padding: 0 15px;
+  margin: 0 auto;
+  min-height: 100%;
+}
+
+/* Обновляем стили для карточек и секций */
+.settings-section,
+.topup-section,
+.subscription-card,
+.plan-card,
+.language-card,
+.support-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+/* Стили для светлой темы */
+.light-theme .settings__title,
+.light-theme .topup__title,
+.light-theme .balance__amount {
+  background: linear-gradient(135deg, #4a4b5e, #6d5dfc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.light-theme .settings__subtitle,
+.light-theme .topup__subtitle {
+  color: var(--text-secondary);
+}
+
+.light-theme .language-card__name,
+.light-theme .support-card__title,
+.light-theme .plan-card__name {
+  color: var(--text-primary);
+}
+
+.light-theme .language-card__native,
+.light-theme .plan-card__price-per-day {
+  color: var(--text-muted);
+}
+
+.light-theme .nav-bottom {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-color);
+}
+
+.light-theme .nav-text {
+  color: var(--text-secondary);
+}
+
+.light-theme .nav-item.active .nav-text {
+  color: #6d5dfc;
+}
+
+.light-theme .home__profile {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.light-theme .home__username {
+  color: var(--text-primary);
+}
+
+.light-theme .subscription-card__date {
+  color: var(--text-muted);
+}
+
+/* Адаптация для светлой темы */
+@media (prefers-color-scheme: light) {
+  body:not(.dark-theme) {
+    --bg-primary: #f5f5f7;
+    --bg-secondary: #ffffff;
+    --bg-card: rgba(255, 255, 255, 0.9);
+    --text-primary: #1a1b2e;
+    --text-secondary: #4a4b5e;
+    --text-muted: #6b6c7e;
+    --border-color: rgba(0, 0, 0, 0.08);
+  }
 }

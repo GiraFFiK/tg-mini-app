@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import './Navigation.css';
 
 type NavItem = {
   id: string;
   label: string;
-  icon: string;
+  icon: React.ReactNode;
   component: React.ReactNode;
 };
 
@@ -13,217 +14,69 @@ interface NavigationProps {
 
 export default function Navigation({ onPageChange }: NavigationProps) {
   const [activePage, setActivePage] = useState<string>('home');
-  const [sliderPosition, setSliderPosition] = useState<number>(0);
-  const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [dragStartX, setDragStartX] = useState<number>(0);
-  const [initialPosition, setInitialPosition] = useState<number>(0);
   
   const navItems: NavItem[] = [
-    { id: 'home', label: 'Home', icon: '🏠', component: null },
-    { id: 'topup', label: 'Top Up', icon: '💰', component: null },
-    { id: 'settings', label: 'Settings', icon: '⚙️', component: null }
-  ];
-  
-  const trackRef = useRef<HTMLDivElement>(null);
-  const sliderRef = useRef<HTMLDivElement>(null);
-
-  const calculatePosition = (pageId: string) => {
-    const index = navItems.findIndex(item => item.id === pageId);
-    if (trackRef.current && index >= 0) {
-      const itemWidth = trackRef.current.offsetWidth / navItems.length;
-      return index * itemWidth + itemWidth / 2;
+    { 
+      id: 'home', 
+      label: 'Home', 
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 10L12 3L21 10V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V10Z" />
+          <path d="M9 22V12H15V22" />
+        </svg>
+      ),
+      component: null 
+    },
+    { 
+      id: 'topup', 
+      label: 'Top Up', 
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="8" width="20" height="12" rx="2" />
+          <path d="M6 12H10" />
+          <path d="M14 12H18" />
+          <path d="M2 12H2" />
+          <path d="M22 12H22" />
+          <path d="M12 12V12" />
+        </svg>
+      ),
+      component: null 
+    },
+    { 
+      id: 'settings', 
+      label: 'Settings', 
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H5.78a1.65 1.65 0 0 0-1.51 1 1.65 1.65 0 0 0 .33 1.82l.07.08A10 10 0 0 0 12 17.66a10 10 0 0 0 6.18-2.58l.07-.08z" />
+          <path d="M16.5 9.4V6.5a1.5 1.5 0 0 0-3 0v2.9" />
+          <path d="M10.5 9.4V6.5a1.5 1.5 0 0 0-3 0v2.9" />
+        </svg>
+      ),
+      component: null 
     }
-    return 0;
-  };
+  ];
 
   useEffect(() => {
-    setSliderPosition(calculatePosition(activePage));
     onPageChange?.(activePage);
   }, [activePage]);
 
   const handleNavClick = (pageId: string) => {
-    if (!isDragging) {
-      setActivePage(pageId);
-    }
+    setActivePage(pageId);
   };
-
-  // Начало перетаскивания
-  const handleDragStart = (clientX: number) => {
-    setIsDragging(true);
-    setDragStartX(clientX);
-    setInitialPosition(sliderPosition);
-    
-    if (sliderRef.current) {
-      sliderRef.current.classList.add('dragging');
-    }
-    if (trackRef.current) {
-      trackRef.current.classList.add('dragging');
-    }
-    
-    // Блокируем скролл
-    document.body.style.overflow = 'hidden';
-    document.body.style.userSelect = 'none';
-  };
-
-  // Процесс перетаскивания
-  const handleDragMove = (clientX: number) => {
-    if (!isDragging || !trackRef.current) return;
-    
-    const trackRect = trackRef.current.getBoundingClientRect();
-    const deltaX = clientX - dragStartX;
-    const trackWidth = trackRect.width;
-    const itemWidth = trackWidth / navItems.length;
-    
-    // Вычисляем новую позицию с ограничениями
-    let newPosition = initialPosition + deltaX;
-    const minPosition = itemWidth / 2;
-    const maxPosition = trackWidth - itemWidth / 2;
-    newPosition = Math.min(Math.max(newPosition, minPosition), maxPosition);
-    
-    // Обновляем позицию слайдера в реальном времени
-    setSliderPosition(newPosition);
-    
-    // Определяем, на какой элемент указывает позиция
-    const itemIndex = Math.min(
-      Math.max(0, Math.floor(newPosition / itemWidth)),
-      navItems.length - 1
-    );
-    
-    const targetPage = navItems[itemIndex].id;
-    if (targetPage !== activePage) {
-      setActivePage(targetPage);
-    }
-  };
-
-  // Конец перетаскивания
-  const handleDragEnd = () => {
-    setIsDragging(false);
-    
-    if (sliderRef.current) {
-      sliderRef.current.classList.remove('dragging');
-    }
-    if (trackRef.current) {
-      trackRef.current.classList.remove('dragging');
-    }
-    
-    // Возвращаем скролл
-    document.body.style.overflow = '';
-    document.body.style.userSelect = '';
-    
-    // Плавно возвращаемся в центр активного элемента
-    setSliderPosition(calculatePosition(activePage));
-  };
-
-  // Mouse события
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    handleDragStart(e.clientX);
-  };
-
-  // Touch события
-  const handleTouchStart = (e: React.TouchEvent) => {
-    e.preventDefault();
-    handleDragStart(e.touches[0].clientX);
-  };
-
-  // Глобальные обработчики
-  useEffect(() => {
-    // Обработчики для мыши
-    const handleGlobalMouseMove = (e: MouseEvent) => {
-      if (isDragging) {
-        e.preventDefault();
-        handleDragMove(e.clientX);
-      }
-    };
-
-    const handleGlobalMouseUp = () => {
-      if (isDragging) {
-        handleDragEnd();
-      }
-    };
-
-    // Обработчики для touch
-    const handleGlobalTouchMove = (e: TouchEvent) => {
-      if (isDragging) {
-        e.preventDefault();
-        handleDragMove(e.touches[0].clientX);
-      }
-    };
-
-    const handleGlobalTouchEnd = () => {
-      if (isDragging) {
-        handleDragEnd();
-      }
-    };
-
-    const handleGlobalTouchCancel = () => {
-      if (isDragging) {
-        handleDragEnd();
-      }
-    };
-
-    // Блокируем контекстное меню при перетаскивании
-    const handleContextMenu = (e: Event) => {
-      if (isDragging) {
-        e.preventDefault();
-      }
-    };
-
-    if (isDragging) {
-      // Добавляем глобальные обработчики
-      window.addEventListener('mousemove', handleGlobalMouseMove);
-      window.addEventListener('mouseup', handleGlobalMouseUp);
-      window.addEventListener('touchmove', handleGlobalTouchMove, { passive: false });
-      window.addEventListener('touchend', handleGlobalTouchEnd);
-      window.addEventListener('touchcancel', handleGlobalTouchCancel);
-      window.addEventListener('contextmenu', handleContextMenu);
-    }
-
-    return () => {
-      // Удаляем глобальные обработчики
-      window.removeEventListener('mousemove', handleGlobalMouseMove);
-      window.removeEventListener('mouseup', handleGlobalMouseUp);
-      window.removeEventListener('touchmove', handleGlobalTouchMove);
-      window.removeEventListener('touchend', handleGlobalTouchEnd);
-      window.removeEventListener('touchcancel', handleGlobalTouchCancel);
-      window.removeEventListener('contextmenu', handleContextMenu);
-    };
-  }, [isDragging, dragStartX, initialPosition, activePage]);
 
   return (
-    <nav className="nav-bottom">
-      <div 
-        className={`nav-track ${isDragging ? 'dragging' : ''}`}
-        ref={trackRef}
-      >
-        {/* Интерактивный круг */}
-        <div 
-          className={`nav-slider liquid-glass ${isDragging ? 'dragging' : ''}`}
-          ref={sliderRef}
-          style={{ 
-            left: `${sliderPosition}px`,
-            transition: isDragging ? 'none' : 'left 0.3s cubic-bezier(0.2, 0.9, 0.4, 1)'
-          }}
-          onMouseDown={handleMouseDown}
-          onTouchStart={handleTouchStart}
-        />
-
-        {/* Элементы навигации */}
+    <nav className="nav-minimal">
+      <div className="nav-minimal__track">
         {navItems.map((item) => (
-          <div
+          <button
             key={item.id}
-            className={`nav-item ${activePage === item.id ? 'active' : ''}`}
+            className={`nav-minimal__item ${activePage === item.id ? 'nav-minimal__item--active' : ''}`}
             onClick={() => handleNavClick(item.id)}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              if (!isDragging) {
-                handleNavClick(item.id);
-              }
-            }}
           >
-            <span className="nav-icon">{item.icon}</span>
-            <span className="nav-text">{item.label}</span>
-          </div>
+            <span className="nav-minimal__icon">{item.icon}</span>
+            <span className="nav-minimal__label">{item.label}</span>
+          </button>
         ))}
       </div>
     </nav>

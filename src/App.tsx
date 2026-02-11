@@ -1,6 +1,8 @@
-import './reset.css'
-import './index.css'
-import { useState } from 'react';
+import "./reset.css";
+import "./index.css";
+import { useState } from "react";
+import { LanguageProvider } from "./components/LanguageContext";
+import { ThemeProvider } from "./components/ThemeContext";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
 import Home from "./components/Home";
@@ -8,17 +10,15 @@ import Topup from "./components/Topup";
 import Settings from "./components/Settings";
 
 export default function App() {
-  // const tg = window.Telegram?.WebApp;
-  // const user = tg?.initDataUnsafe?.user;
-  const [currentPage, setCurrentPage] = useState<string>('home');
+  const [currentPage, setCurrentPage] = useState<string>("home");
 
   const renderPage = () => {
     switch (currentPage) {
-      case 'home':
+      case "home":
         return <Home />;
-      case 'topup':
+      case "topup":
         return <Topup />;
-      case 'settings':
+      case "settings":
         return <Settings />;
       default:
         return <Home />;
@@ -26,14 +26,14 @@ export default function App() {
   };
 
   return (
-    <div>
-      <div className="wrapper">
-        <Header />
-        {renderPage()}
-        <Navigation onPageChange={setCurrentPage} />
-      </div>
-    </div>
+    <ThemeProvider>
+      <LanguageProvider>
+        <div className="wrapper">
+          <Header />
+          {renderPage()}
+          <Navigation onPageChange={setCurrentPage} />
+        </div>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
-
-{/* <p>{user?.first_name}</p> */}

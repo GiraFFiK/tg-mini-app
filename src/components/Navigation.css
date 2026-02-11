@@ -1,0 +1,136 @@
+/* Navigation.css */
+.nav-minimal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(10, 11, 26, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.nav-minimal__track {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+    height: 100%;
+    padding: 0 16px;
+}
+
+.nav-minimal__item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    padding: 12px 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    gap: 6px;
+}
+
+.nav-minimal__icon {
+    font-size: 22px;
+    transition: all 0.2s ease;
+    opacity: 0.7;
+    filter: grayscale(0.5);
+}
+
+.nav-minimal__label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+    color: #fff;
+}
+
+/* Активное состояние */
+.nav-minimal__item--active .nav-minimal__icon {
+    opacity: 1;
+    filter: grayscale(0);
+    transform: translateY(-2px);
+    color: #6d5dfc;
+}
+
+.nav-minimal__item--active .nav-minimal__label {
+    opacity: 1;
+    color: #6d5dfc;
+    font-weight: 600;
+}
+
+/* Эффект наведения */
+.nav-minimal__item:hover .nav-minimal__icon {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+.nav-minimal__item:hover .nav-minimal__label {
+    opacity: 0.9;
+}
+
+/* Адаптация для светлой темы */
+.light-theme .nav-minimal {
+    background: rgba(255, 255, 255, 0.85);
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.light-theme .nav-minimal__label {
+    color: #1a1b2e;
+}
+
+.light-theme .nav-minimal__item--active .nav-minimal__icon,
+.light-theme .nav-minimal__item--active .nav-minimal__label {
+    color: #6d5dfc;
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+    .nav-minimal {
+        height: 70px;
+    }
+
+    .nav-minimal__icon {
+        font-size: 20px;
+    }
+
+    .nav-minimal__label {
+        font-size: 10px;
+    }
+}
+
+/* Анимация появления */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.nav-minimal {
+    animation: slideUp 0.3s ease-out;
+}
+
+/* Убираем старые стили навигации */
+.nav-bottom,
+.nav-track,
+.nav-slider,
+.nav-item {
+    display: none;
+}
