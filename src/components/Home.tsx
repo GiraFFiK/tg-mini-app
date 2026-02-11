@@ -1,8 +1,10 @@
 import { useLanguage } from "./LanguageContext";
+// import { useTheme } from "./ThemeContext";
 import "./Home.css";
 
 export default function Home() {
   const { t } = useLanguage();
+//   const { theme } = useTheme();
 
   // Данные пользователя из Telegram
   const tg = window.Telegram?.WebApp;
@@ -18,27 +20,17 @@ export default function Home() {
   return (
     <div className="home">
       <div className="container">
-        {/* Header с логотипом и профилем */}
-        <div className="home__header">
+        {/* Только логотип сверху */}
+        {/* <div className="home__header">
           <div className="home__logo">
             <span className="home__logo-text">W</span>
-            <span className="home__logo-gradient">{t("wallet")}</span>
+            <span className="home__logo-accent">.</span>
           </div>
+        </div> */}
 
-          <div className="home__profile">
-            {photoUrl ? (
-              <img src={photoUrl} alt={username} className="home__avatar" />
-            ) : (
-              <div className="home__avatar home__avatar--placeholder">
-                {initials}
-              </div>
-            )}
-            <span className="home__username">@{username}</span>
-          </div>
-        </div>
-
-        {/* Карточка подписки */}
+        {/* Карточка подписки с профилем */}
         <div className="subscription-card">
+          {/* Шапка карточки с подпиской и статусом */}
           <div className="subscription-card__header">
             <span className="subscription-card__title">
               {t("subscription")}
@@ -46,6 +38,31 @@ export default function Home() {
             <span className="subscription-card__badge">{t("active")}</span>
           </div>
 
+          {/* Блок с аватаром и пользователем */}
+          <div className="subscription-card__profile">
+            <div className="subscription-card__avatar-wrapper">
+              {photoUrl ? (
+                <img
+                  src={photoUrl}
+                  alt={username}
+                  className="subscription-card__avatar"
+                />
+              ) : (
+                <div className="subscription-card__avatar subscription-card__avatar--placeholder">
+                  {initials}
+                </div>
+              )}
+              <div className="subscription-card__avatar-glow"></div>
+            </div>
+            <div className="subscription-card__user-info">
+              <span className="subscription-card__username">@{username}</span>
+              {/* <span className="subscription-card__user-status">
+                {t("active_subscriber") || "Активный подписчик"}
+              </span> */}
+            </div>
+          </div>
+
+          {/* Дни и прогресс */}
           <div className="subscription-card__content">
             <div className="subscription-card__days">
               <span className="subscription-card__days-number">15</span>
@@ -67,6 +84,9 @@ export default function Home() {
               </span>
             </div>
           </div>
+
+          {/* Декоративный элемент */}
+          <div className="subscription-card__decoration"></div>
         </div>
       </div>
     </div>

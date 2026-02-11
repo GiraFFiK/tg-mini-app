@@ -107,15 +107,6 @@ export default function Topup() {
                   <div className="plan-card__price-per-day">
                     {Math.round(plan.price / plan.days)} {t("per_day")}
                   </div>
-                  {plan.discount > 0 && (
-                    <div className="plan-card__savings">
-                      {t("economy")}{" "}
-                      {Math.round(
-                        (plan.days * 80 - plan.price) / (plan.days / 30),
-                      )}{" "}
-                      ₽
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
