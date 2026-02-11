@@ -25,7 +25,6 @@ html, body {
 
 .header__logo {
   width: 200px;
-  margin-left: -15px;
 }
 
 
@@ -77,14 +76,16 @@ html, body {
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(26, 27, 46, 0.95);
-  backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  height: 80px;
+  background: rgba(10, 11, 26, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  height: 90px;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .nav-track {
@@ -94,6 +95,12 @@ html, body {
   width: 90%;
   max-width: 500px;
   margin: 0 auto;
+  height: 100%;
+  align-items: center;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .nav-item {
@@ -107,61 +114,264 @@ html, body {
   cursor: pointer;
   user-select: none;
   z-index: 2;
+  transition: all 0.3s ease;
 }
 
 .nav-icon {
-  font-size: 20px;
+  font-size: 24px;
   margin-bottom: 5px;
-  transition: transform 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 .nav-text {
   font-size: 12px;
   opacity: 0.7;
-  transition: opacity 0.3s ease, color 0.3s ease;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  letter-spacing: 0.5px;
 }
 
 .nav-item.active .nav-icon {
-  transform: translateY(-5px);
+  transform: translateY(-8px) scale(1.2);
+  filter: drop-shadow(0 4px 8px rgba(109, 93, 252, 0.4));
 }
 
 .nav-item.active .nav-text {
   opacity: 1;
-  color: #6d5dfc;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(109, 93, 252, 0.3);
+  font-weight: 600;
 }
 
-/* Интерактивный круг */
-.nav-slider {
+/* ===== Liquid Glass Slider ===== */
+.nav-slider.liquid-glass {
   position: absolute;
   top: 50%;
   left: 0;
   transform: translate(-50%, -50%);
-  width: 70px;
-  height: 70px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  background: linear-gradient(45deg, #6d5dfc, #43d4ff);
-  box-shadow: 0 5px 20px rgba(109, 93, 252, 0.4);
-  transition: left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  z-index: 1;
   cursor: grab;
-  touch-action: none;
+  touch-action: pan-x;
+  transition: left 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 1;
+
+  /* Liquid Glass эффект */
+  background: radial-gradient(circle at 30% 30%,
+      rgba(255, 255, 255, 0.9),
+      rgba(109, 93, 252, 0.8) 60%,
+      rgba(67, 212, 255, 0.9) 100%);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow:
+    0 10px 30px rgba(109, 93, 252, 0.3),
+    inset 0 -5px 15px rgba(0, 0, 0, 0.2),
+    inset 0 5px 15px rgba(255, 255, 255, 0.6),
+    0 0 0 2px rgba(255, 255, 255, 0.1);
+
+  animation: liquidPulse 4s ease-in-out infinite;
 }
 
-.nav-slider:active {
+.nav-slider.liquid-glass:active {
   cursor: grabbing;
+  transform: translate(-50%, -50%) scale(0.95);
+  transition: transform 0.2s ease;
 }
 
-.nav-slider::after {
+/* Внутреннее свечение */
+.nav-slider.liquid-glass::before {
   content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 50px;
-  height: 50px;
+  top: 5px;
+  left: 5px;
+  right: 5px;
+  bottom: 5px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(5px);
+  background: radial-gradient(circle at 30% 30%,
+      rgba(255, 255, 255, 0.8),
+      rgba(255, 255, 255, 0.2) 70%);
+  opacity: 0.8;
+  animation: liquidShimmer 3s ease-in-out infinite;
+}
+
+/* Блик */
+.nav-slider.liquid-glass::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%,
+      rgba(255, 255, 255, 0.3),
+      transparent 70%);
+  animation: liquidGlow 3s ease-in-out infinite;
+}
+
+/* Пузырьки */
+.liquid-glass-bubble {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(2px);
+  animation: bubbleFloat 4s ease-in-out infinite;
+}
+
+/* Анимации Liquid Glass */
+@keyframes liquidPulse {
+  0%, 100% {
+    box-shadow:
+      0 10px 30px rgba(109, 93, 252, 0.3),
+      inset 0 -5px 15px rgba(0, 0, 0, 0.2),
+      inset 0 5px 15px rgba(255, 255, 255, 0.6),
+      0 0 0 2px rgba(255, 255, 255, 0.1);
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  50% {
+    box-shadow:
+      0 15px 40px rgba(109, 93, 252, 0.5),
+      inset 0 -7px 20px rgba(0, 0, 0, 0.3),
+      inset 0 7px 20px rgba(255, 255, 255, 0.8),
+      0 0 0 3px rgba(255, 255, 255, 0.15);
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+}
+
+@keyframes liquidShimmer {
+  0%, 100% {
+    opacity: 0.8;
+    background: radial-gradient(circle at 30% 30%,
+        rgba(255, 255, 255, 0.8),
+        rgba(255, 255, 255, 0.2) 70%);
+  }
+
+  50% {
+    opacity: 1;
+    background: radial-gradient(circle at 40% 40%,
+        rgba(255, 255, 255, 1),
+        rgba(255, 255, 255, 0.3) 70%);
+  }
+}
+
+@keyframes liquidGlow {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes bubbleFloat {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+
+  50% {
+    transform: translateY(-20px) scale(1.2);
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: translateY(-40px) scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* Градиентный фон для активных элементов */
+.nav-item.active .nav-icon {
+  color: transparent;
+  background: linear-gradient(135deg, #fff, #e0e0ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Эффект ряби при перетаскивании */
+.nav-slider.liquid-glass.dragging {
+  animation: liquidDrag 0.5s ease-in-out infinite alternate;
+}
+
+.nav-track.dragging::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 50% 50%,
+      rgba(109, 93, 252, 0.1),
+      transparent 70%);
+  pointer-events: none;
+  animation: pulseGlow 1s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* След от перетаскивания */
+.nav-slider.liquid-glass.dragging::before {
+  animation: liquidTrail 1s ease-out infinite;
+}
+
+@keyframes liquidTrail {
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+@keyframes liquidDrag {
+  0% {
+    transform: translate(-50%, -50%) scale(0.95);
+    border-radius: 50%;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(1.1) rotate(5deg);
+    border-radius: 45% 55% 50% 50% / 50% 45% 55% 50%;
+  }
+}
+
+@keyframes liquidRipple {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(109, 93, 252, 0.7),
+      0 10px 30px rgba(109, 93, 252, 0.3),
+      inset 0 -5px 15px rgba(0, 0, 0, 0.2),
+      inset 0 5px 15px rgba(255, 255, 255, 0.6);
+  }
+
+  100% {
+    box-shadow:
+      0 0 0 20px rgba(109, 93, 252, 0),
+      0 10px 30px rgba(109, 93, 252, 0.3),
+      inset 0 -5px 15px rgba(0, 0, 0, 0.2),
+      inset 0 5px 15px rgba(255, 255, 255, 0.6);
+  }
 }
 
 /* Контент страниц */
