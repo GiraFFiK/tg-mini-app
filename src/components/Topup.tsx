@@ -290,7 +290,7 @@ export default function Topup() {
               </div>
             )}
 
-            <p className="topup__terms">{t("terms")}</p>
+            {/* <p className="topup__terms">{t("terms")}</p> */}
           </div>
         )}
       </div>

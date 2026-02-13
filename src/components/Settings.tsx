@@ -226,7 +226,7 @@ export default function Settings() {
         {/* Информация о приложении */}
         <div className="settings-footer">
           <div className="settings-footer__version">Version 1.0.0</div>
-          <div className="settings-footer__copyright">© 2026 Wallet App</div>
+          <div className="settings-footer__copyright">© 2026 AuraVPN</div>
         </div>
       </div>
     </div>

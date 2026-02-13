@@ -345,3 +345,248 @@
 .light-theme .subscription-card__progress {
     background: rgba(0, 0, 0, 0.06);
 }
+
+/* История покупок */
+.history-section {
+  margin-top: 32px;
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 20px;
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.history-section:hover {
+  border-color: rgba(157, 106, 245, 0.2);
+  box-shadow: 0 8px 32px rgba(109, 93, 252, 0.1);
+}
+
+.history-section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.history-section__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+.history-section__count {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 500;
+  padding: 4px 10px;
+  background: rgba(109, 93, 252, 0.1);
+  border-radius: 100px;
+  border: 1px solid rgba(109, 93, 252, 0.2);
+}
+
+/* Список истории */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.history-item:hover {
+  background: rgba(109, 93, 252, 0.05);
+  border-color: rgba(157, 106, 245, 0.2);
+  transform: translateX(2px);
+}
+
+.history-item__left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.history-item__date {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.history-item__plan {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.history-item__right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.history-item__stars {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.history-item__stars-number {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.history-item__stars-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.history-item__status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 100px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.history-item__status--active {
+  background: rgba(67, 212, 255, 0.15);
+  color: #43d4ff;
+  border: 1px solid rgba(67, 212, 255, 0.3);
+}
+
+.history-item__status--expired {
+  background: rgba(255, 107, 107, 0.1);
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 107, 107, 0.2);
+}
+
+/* Кнопка "Показать еще" */
+.history-section__show-more {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(109, 93, 252, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.history-section__show-more:hover {
+  background: rgba(109, 93, 252, 0.1);
+  border-color: rgba(157, 106, 245, 0.3);
+  transform: translateY(-1px);
+}
+
+.history-section__show-more:active {
+  transform: translateY(0);
+}
+
+/* Анимация появления */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.history-item {
+  animation: slideIn 0.3s ease-out;
+}
+
+.history-item:nth-child(1) { animation-delay: 0.05s; }
+.history-item:nth-child(2) { animation-delay: 0.1s; }
+.history-item:nth-child(3) { animation-delay: 0.15s; }
+.history-item:nth-child(4) { animation-delay: 0.2s; }
+.history-item:nth-child(5) { animation-delay: 0.25s; }
+
+/* Адаптивность */
+@media (max-width: 480px) {
+  .history-section {
+    padding: 16px;
+  }
+
+  .history-section__title {
+    font-size: 16px;
+  }
+
+  .history-section__count {
+    font-size: 12px;
+    padding: 3px 8px;
+  }
+
+  .history-item {
+    padding: 10px;
+  }
+
+  .history-item__date {
+    font-size: 12px;
+  }
+
+  .history-item__plan {
+    font-size: 14px;
+  }
+
+  .history-item__stars-number {
+    font-size: 14px;
+  }
+
+  .history-item__status {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+}
+
+/* Стили для светлой темы */
+.light-theme .history-section {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.light-theme .history-item {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.light-theme .history-item:hover {
+  background: rgba(109, 93, 252, 0.05);
+}
+
+.light-theme .history-section__show-more {
+  background: rgba(109, 93, 252, 0.03);
+  color: #1a1b2e;
+}
+
+.light-theme .history-section__show-more:hover {
+  background: rgba(109, 93, 252, 0.08);
+}
+
+.light-theme .history-item__status--expired {
+  background: rgba(255, 107, 107, 0.05);
+  color: #d32f2f;
+}

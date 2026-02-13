@@ -20,6 +20,11 @@ const translations = {
     // Home
     wallet: "allet",
     days_remaining: "дней осталось",
+    purchase_history: "История покупок",
+    total: "всего",
+    show_more: "Показать еще",
+    show_less: "Скрыть",
+    expired: "Истек",
 
     // Top Up
     subscription_title: "Оформление подписки",
@@ -48,7 +53,7 @@ const translations = {
     settings: "Настройки",
     language: "Язык",
     support: "Поддержка",
-    contact_support: "Связаться с поддержкой",
+    contact_support: "Поддержка",
     coming_soon: "Скоро",
     notifications: "Уведомления",
     push_notifications: "Push уведомления",
@@ -64,6 +69,11 @@ const translations = {
     // Home
     wallet: "Wallet",
     days_remaining: "days remaining",
+    purchase_history: "Purchase history",
+    total: "total",
+    show_more: "Show more",
+    show_less: "Show less",
+    expired: "Expired",
 
     // Top Up
     subscription_title: "Subscription Plans",
