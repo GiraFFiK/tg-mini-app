@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLanguage } from "./LanguageContext";
+import starsIcon from "../public/6514f1e6-dab4-4d49-806a-3ff22d7793e5.webp";
 import "./Topup.css";
 
 export default function Topup() {
@@ -66,9 +67,20 @@ export default function Topup() {
     },
   ];
 
-  const formatStars = (stars: number) => {
-    return `${stars} ⭐️`;
-  };
+  // const formatStars = (stars: number) => {
+  //   return (
+  //     <span className="stars-display">
+  //       {stars}
+  //       <img
+  //         src={starsIcon}
+  //         alt="⭐"
+  //         className="stars-display__icon"
+  //         width="24"
+  //         height="24"
+  //       />
+  //     </span>
+  //   );
+  // };
 
   const handleTopUp = () => {
     // Открываем PremiumBot
@@ -118,7 +130,13 @@ export default function Topup() {
                 >
                   {starsBalance}
                 </span>
-                <span className="stars-balance__icon">⭐️</span>
+                <img
+                  src={starsIcon}
+                  alt="⭐"
+                  className="stars-balance__icon"
+                  width="32"
+                  height="32"
+                />
               </div>
             )}
           </div>
@@ -172,9 +190,16 @@ export default function Topup() {
                 </div>
 
                 <div className="plan-card__price">
-                  <span className="plan-card__price-value">
-                    {formatStars(plan.stars)}
-                  </span>
+                  <div className="plan-card__price-value">
+                    <span>{plan.stars}</span>
+                    <img
+                      src={starsIcon}
+                      alt="⭐"
+                      className="plan-card__stars-icon"
+                      width="28"
+                      height="28"
+                    />
+                  </div>
                   {plan.discount > 0 && plan.active && (
                     <span className="plan-card__discount">
                       -{plan.discount}%
@@ -201,12 +226,28 @@ export default function Topup() {
 
                     <div className="plan-card__footer">
                       <div className="plan-card__price-per-day">
-                        {Math.round((plan.stars / plan.days) * 10) / 10} ⭐️/
-                        {t("day") || "день"}
+                        <span>
+                          {Math.round((plan.stars / plan.days) * 10) / 10}
+                        </span>
+                        <img
+                          src={starsIcon}
+                          alt="⭐"
+                          className="plan-card__price-per-day-icon"
+                          width="16"
+                          height="16"
+                        />
+                        <span>/{t("day") || "день"}</span>
                       </div>
                       {plan.id === "3months" && (
                         <div className="plan-card__savings">
-                          {t("economy")} 20 ⭐️
+                          <span>{t("economy")} 20</span>
+                          <img
+                            src={starsIcon}
+                            alt="⭐"
+                            className="plan-card__savings-icon"
+                            width="16"
+                            height="16"
+                          />
                         </div>
                       )}
                     </div>
@@ -226,7 +267,14 @@ export default function Topup() {
             >
               <span>{t("subscribe")}</span>
               <span className="topup__button-price">
-                {formatStars(selectedPlanData.stars)}
+                <span>{selectedPlanData.stars}</span>
+                <img
+                  src={starsIcon}
+                  alt="⭐"
+                  className="topup__button-price-icon"
+                  width="20"
+                  height="20"
+                />
               </span>
             </button>
 
