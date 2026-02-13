@@ -12,7 +12,7 @@
 
 /* Заголовок */
 .topup__header {
-    margin-bottom: 40px;
+    margin-bottom: 24px;
     text-align: left;
 }
 
@@ -34,6 +34,78 @@
     line-height: 1.5;
 }
 
+/* Баланс звезд */
+.stars-balance {
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 32px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stars-balance__info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stars-balance__label {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.stars-balance__value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stars-balance__number {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.stars-balance__icon {
+    font-size: 28px;
+    filter: drop-shadow(0 4px 8px rgba(255, 215, 0, 0.3));
+    animation: starTwinkle 2s ease-in-out infinite;
+}
+
+.stars-balance__skeleton {
+    width: 80px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+.stars-balance__button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #6d5dfc, #9f7aea);
+    border: none;
+    border-radius: 100px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.stars-balance__button:hover {
+    transform: translateX(2px);
+    box-shadow: 0 8px 16px rgba(109, 93, 252, 0.3);
+}
+
 /* Сетка тарифов */
 .plans-grid {
     display: flex;
@@ -45,18 +117,17 @@
 /* Карточка тарифа */
 .plan-card {
     position: relative;
-    background: rgba(18, 19, 33, 0.7);
+    background: var(--card-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-color);
     transition: all 0.3s ease;
     cursor: pointer;
     overflow: hidden;
 }
 
-.plan-card:hover {
-    background: rgba(26, 27, 46, 0.8);
+.plan-card:hover:not(.plan-card--inactive) {
     border-color: rgba(157, 106, 245, 0.3);
     transform: translateY(-2px);
 }
@@ -71,6 +142,12 @@
     background: linear-gradient(135deg, rgba(109, 93, 252, 0.15), rgba(157, 106, 245, 0.05));
 }
 
+.plan-card--inactive {
+    opacity: 0.6;
+    cursor: not-allowed;
+    filter: grayscale(0.5);
+}
+
 .plan-card__badge {
     position: absolute;
     top: 12px;
@@ -83,6 +160,22 @@
     color: white;
     letter-spacing: 0.3px;
     box-shadow: 0 4px 12px rgba(109, 93, 252, 0.3);
+    z-index: 2;
+}
+
+.plan-card__coming-soon {
+    position: absolute;
+    top: 12px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 2;
 }
 
 .plan-card__content {
@@ -90,36 +183,27 @@
 }
 
 .plan-card__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
     margin-bottom: 16px;
 }
 
 .plan-card__name {
     font-size: 20px;
     font-weight: 600;
-    color: #fff;
+    color: var(--text-primary);
     margin: 0;
-}
-
-.plan-card__period {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.5);
-    font-weight: 400;
 }
 
 .plan-card__price {
     display: flex;
     align-items: baseline;
     gap: 12px;
-    margin-bottom: 8px;
+    margin-bottom: 16px;
 }
 
 .plan-card__price-value {
     font-size: 36px;
     font-weight: 700;
-    color: #fff;
+    color: var(--text-primary);
     line-height: 1;
 }
 
@@ -131,13 +215,6 @@
     font-weight: 600;
     color: #9f7aea;
     border: 1px solid rgba(109, 93, 252, 0.4);
-}
-
-.plan-card__savings {
-    font-size: 14px;
-    color: #43d4ff;
-    margin-bottom: 20px;
-    font-weight: 500;
 }
 
 .plan-card__features {
@@ -152,7 +229,7 @@
     align-items: center;
     gap: 10px;
     font-size: 15px;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-secondary);
 }
 
 .plan-card__feature-icon {
@@ -166,12 +243,18 @@
     justify-content: space-between;
     align-items: center;
     padding-top: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid var(--border-color);
 }
 
 .plan-card__price-per-day {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-muted);
+}
+
+.plan-card__savings {
+    font-size: 14px;
+    color: #43d4ff;
+    font-weight: 500;
 }
 
 /* Кнопка оформления */
@@ -198,13 +281,18 @@
     margin-bottom: 16px;
 }
 
-.topup__button:hover {
+.topup__button:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 12px 32px rgba(109, 93, 252, 0.3);
 }
 
-.topup__button:active {
+.topup__button:active:not(:disabled) {
     transform: translateY(0);
+}
+
+.topup__button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .topup__button-price {
@@ -217,44 +305,35 @@
 
 .topup__terms {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--text-muted);
     line-height: 1.5;
     max-width: 400px;
     margin: 0 auto;
 }
 
-/* Адаптивность */
-@media (max-width: 480px) {
-    .topup__title {
-        font-size: 24px;
+/* Анимации */
+@keyframes starTwinkle {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
     }
 
-    .plan-card__content {
-        padding: 20px;
-    }
-
-    .plan-card__name {
-        font-size: 18px;
-    }
-
-    .plan-card__price-value {
-        font-size: 30px;
-    }
-
-    .plan-card__badge {
-        top: 12px;
-        right: 16px;
-        padding: 4px 12px;
-        font-size: 12px;
-    }
-
-    .topup__button {
-        padding: 16px 20px;
-        font-size: 16px;
+    50% {
+        opacity: 0.8;
+        transform: scale(1.1);
     }
 }
 
-/* Анимации */
+@keyframes skeletonPulse {
+    0%, 100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
 @keyframes slideIn {
     from {
         opacity: 0;
@@ -287,27 +366,165 @@
     animation-delay: 0.4s;
 }
 
-/* Состояние загрузки */
-.topup__button--loading {
-    opacity: 0.7;
-    cursor: not-allowed;
+/* Адаптивность */
+@media (max-width: 480px) {
+    .topup__title {
+        font-size: 24px;
+    }
+
+    .stars-balance__number {
+        font-size: 28px;
+    }
+
+    .stars-balance__icon {
+        font-size: 24px;
+    }
+
+    .plan-card__content {
+        padding: 20px;
+    }
+
+    .plan-card__name {
+        font-size: 18px;
+    }
+
+    .plan-card__price-value {
+        font-size: 30px;
+    }
+
+    .plan-card__badge,
+    .plan-card__coming-soon {
+        top: 12px;
+        right: 16px;
+        padding: 4px 12px;
+        font-size: 12px;
+    }
+
+    .topup__button {
+        padding: 16px 20px;
+        font-size: 16px;
+    }
 }
 
-.topup__button--loading .topup__button-price {
-    background: transparent;
+/* Светлая тема */
+.light-theme .stars-balance {
+    background: rgba(255, 255, 255, 0.9);
 }
 
-/* Пустое состояние */
-.topup__empty {
-    text-align: center;
-    padding: 60px 20px;
-    background: rgba(18, 19, 33, 0.5);
-    border-radius: 24px;
-    border: 1px dashed rgba(109, 93, 252, 0.3);
+.light-theme .plan-card__price-value {
+    color: #1a1b2e;
 }
 
-.topup__empty-text {
-    font-size: 16px;
-    color: rgba(255, 255, 255, 0.5);
-    margin-top: 12px;
+.light-theme .plan-card__feature {
+    color: #4a4b5e;
+}
+
+/* Предупреждающий цвет для баланса */
+.stars-balance__number--warning {
+    color: #ff6b6b !important;
+    animation: shake 0.5s ease-in-out;
+}
+
+/* Карточка с недостаточным балансом */
+.plan-card--insufficient {
+    border-color: #ff6b6b !important;
+    box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
+    animation: pulseWarning 2s ease-in-out infinite;
+}
+
+/* Кнопка в состоянии ошибки */
+.topup__button--error {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* Сообщение об ошибке */
+.topup__error {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    border-radius: 16px;
+    margin-bottom: 20px;
+    animation: slideDown 0.3s ease-out;
+}
+
+.topup__error-icon {
+    font-size: 20px;
+}
+
+.topup__error-text {
+    font-size: 14px;
+    color: #ff6b6b;
+    line-height: 1.5;
+    margin: 0;
+    flex: 1;
+}
+
+.topup__error-link {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: #9f7aea;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: all 0.2s ease;
+}
+
+.topup__error-link:hover {
+    color: #6d5dfc;
+    text-decoration: none;
+}
+
+/* Анимации */
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+
+    10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-2px);
+    }
+
+    20%, 40%, 60%, 80% {
+        transform: translateX(2px);
+    }
+}
+
+@keyframes pulseWarning {
+    0%, 100% {
+        border-color: #ff6b6b;
+        box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
+    }
+
+    50% {
+        border-color: #ff8b8b;
+        box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.1);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Светлая тема */
+.light-theme .topup__error {
+    background: rgba(255, 107, 107, 0.05);
+}
+
+.light-theme .topup__error-text {
+    color: #d32f2f;
 }

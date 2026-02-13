@@ -38,6 +38,11 @@ const translations = {
     full_access: "Полный доступ ко всем функциям",
     priority_support: "Приоритетная поддержка",
     unlimited: "Без ограничений",
+    stars_balance: "Баланс звезд",
+    top_up: "Пополнить",
+    day: "день",
+    insufficient_balance: "Недостаточно средств.",
+    please_top_up: "Пожалуйста, пополните баланс",
 
     // Settings
     settings: "Настройки",
@@ -77,6 +82,11 @@ const translations = {
     full_access: "Full access to all features",
     priority_support: "Priority support",
     unlimited: "Unlimited",
+    stars_balance: "Stars balance",
+    top_up: "Top up",
+    day: "day",
+    insufficient_balance: "Insufficient funds.",
+    please_top_up: "Please top up your balance",
 
     // Settings
     settings: "Settings",

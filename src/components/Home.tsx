@@ -20,14 +20,6 @@ export default function Home() {
   return (
     <div className="home">
       <div className="container">
-        {/* Только логотип сверху */}
-        {/* <div className="home__header">
-          <div className="home__logo">
-            <span className="home__logo-text">W</span>
-            <span className="home__logo-accent">.</span>
-          </div>
-        </div> */}
-
         {/* Карточка подписки с профилем */}
         <div className="subscription-card">
           {/* Шапка карточки с подпиской и статусом */}
