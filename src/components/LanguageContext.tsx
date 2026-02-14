@@ -49,6 +49,30 @@ const translations = {
     insufficient_balance: "Недостаточно средств.",
     please_top_up: "Пожалуйста, пополните баланс",
 
+    //Referral
+    referral_title: "Реферальная система",
+    referral_subtitle: "Приглашайте друзей и получайте бонусы",
+    invited: "Приглашено",
+    bonus_days: "Бонусных дней",
+    your_link: "Ваша реферальная ссылка",
+    link_description:
+      "Отправьте эту ссылку друзьям. Когда они перейдут по ней и оформят подписку, вы оба получите по 3 дня бесплатно!",
+    copy: "Копировать",
+    copied: "Скопировано!",
+    share: "Поделиться",
+    bonus_info: "За каждого активного друга вы получаете +3 дня к подписке",
+    invited_friends: "Приглашенные друзья",
+    pending: "Ожидание",
+    no_referrals: "У вас пока нет приглашенных друзей",
+    share_link_hint: "Поделитесь ссылкой и получите бонусы!",
+    share_text:
+      "Присоединяйся по моей реферальной ссылке и получи 3 дня бесплатного доступа!",
+    total_invited: "Всего приглашено",
+    activated: "Активировано",
+    bonus_title: "Мгновенный бонус!",
+    bonus_description:
+      "Как только друг перейдет по ссылке и запустит бота, вы оба получите по 3 дня бесплатно. Даже без покупки подписки!",
+
     // Settings
     settings: "Настройки",
     language: "Язык",
@@ -97,6 +121,29 @@ const translations = {
     day: "day",
     insufficient_balance: "Insufficient funds.",
     please_top_up: "Please top up your balance",
+
+    //Referral
+    referral_title: "Referral System",
+    referral_subtitle: "Invite friends and get bonuses",
+    invited: "Invited",
+    bonus_days: "Bonus days",
+    your_link: "Your referral link",
+    link_description:
+      "Share this link with friends. When they follow it and subscribe, you both get 3 free days!",
+    copy: "Copy",
+    copied: "Copied!",
+    share: "Share",
+    bonus_info: "For each active friend you get +3 days to your subscription",
+    invited_friends: "Invited friends",
+    pending: "Pending",
+    no_referrals: "You have no invited friends yet",
+    share_link_hint: "Share the link and get bonuses!",
+    share_text: "Join via my referral link and get 3 days of free access!",
+    total_invited: "Total invited",
+    activated: "Activated",
+    bonus_title: "Instant bonus!",
+    bonus_description:
+      "As soon as a friend follows the link and starts the bot, you both get 3 free days. Even without purchasing a subscription!",
 
     // Settings
     settings: "Settings",
