@@ -25,6 +25,15 @@ const translations = {
     show_more: "Показать еще",
     show_less: "Скрыть",
     expired: "Истек",
+    activation_code: "Код активации",
+    replace_code: "Заменить код",
+    no_subscription_code: "Оформите подписку для получения кода активации",
+    choose_device: "Выберите устройство",
+    device_instructions:
+      "Выберите устройство для просмотра инструкции по подключению",
+    instructions_soon: "Скоро",
+    instructions_placeholder:
+      "Инструкция по настройке появится здесь. Это временное сообщение.",
 
     // Top Up
     subscription_title: "Оформление подписки",
@@ -98,6 +107,13 @@ const translations = {
     show_more: "Show more",
     show_less: "Show less",
     expired: "Expired",
+    activation_code: "Activation code",
+    replace_code: "Replace code",
+    no_subscription_code: "Subscribe to get an activation code",
+    choose_device: "Choose device",
+    device_instructions: "Select a device to view setup instructions",
+    instructions_soon: "Soon",
+    instructions_placeholder: "Setup instructions will appear here. This is a temporary message.",
 
     // Top Up
     subscription_title: "Subscription Plans",
