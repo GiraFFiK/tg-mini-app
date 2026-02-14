@@ -27,7 +27,7 @@ export default function Referral() {
     },
     {
       id: 2,
-      username: "maria_s",
+      username: "maria_z",
       firstName: "Мария",
       date: "12.02.2026",
       status: "activated",
@@ -86,7 +86,7 @@ export default function Referral() {
   const handleShareLink = () => {
     const text =
       t("share_text") ||
-      `Присоединяйся по моей реферальной ссылке и получи 3 дня бесплатного доступа!`;
+      `Присоединяйся по моей реферальной ссылке и получи 3 дня бесплатного VPN!`;
     tg?.openTelegramLink?.(
       `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`,
     );
@@ -115,7 +115,7 @@ export default function Referral() {
           </div>
           <div className="referral-stat">
             <span className="referral-stat__label">
-              {t("activated") || "Активировано"}
+              {t("activated") || "Активировано"} <span>&nbsp;</span>
             </span>
             <span className="referral-stat__value">{activatedReferrals}</span>
           </div>
@@ -250,9 +250,9 @@ export default function Referral() {
                       </div>
                       <div className="referral-item__info">
                         <div className="referral-item__name">
-                          <span className="referral-item__firstname">
+                          {/* <span className="referral-item__firstname">
                             {referral.firstName}
-                          </span>
+                          </span> */}
                           <span className="referral-item__username">
                             @{referral.username}
                           </span>
