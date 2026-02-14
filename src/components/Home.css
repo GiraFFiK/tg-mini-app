@@ -910,3 +910,168 @@
   background: rgba(0, 0, 0, 0.02);
 }
 
+/* Пустое состояние истории */
+.history-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 24px;
+  border: 1px dashed var(--border-color);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.history-empty__icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.7;
+  animation: float 3s ease-in-out infinite;
+}
+
+.history-empty__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.history-empty__text {
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 280px;
+  line-height: 1.6;
+}
+
+.history-empty__button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #6d5dfc, #9f7aea);
+  border: none;
+  border-radius: 100px;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 16px rgba(109, 93, 252, 0.2);
+}
+
+.history-empty__button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(109, 93, 252, 0.3);
+}
+
+.history-empty__button:active {
+  transform: translateY(0);
+}
+
+/* Анимации */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+  .history-empty {
+    padding: 32px 16px;
+  }
+
+  .history-empty__icon {
+    font-size: 40px;
+  }
+
+  .history-empty__title {
+    font-size: 16px;
+  }
+
+  .history-empty__text {
+    font-size: 13px;
+  }
+
+  .history-empty__button {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+}
+
+/* Стили для светлой темы */
+.light-theme .history-empty {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light-theme .history-empty__title {
+  color: #1a1b2e;
+}
+
+.light-theme .history-empty__text {
+  color: #4a4b5e;
+}
+
+/* Неактивное состояние подписки */
+.subscription-card__badge--inactive {
+  background: rgba(255, 107, 107, 0.15) !important;
+  color: #ff6b6b !important;
+  border: 1px solid rgba(255, 107, 107, 0.3) !important;
+}
+
+.subscription-card__inactive {
+  padding: 20px 0;
+  text-align: center;
+}
+
+.subscription-card__inactive-text {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Обновляем стили для пустого состояния истории */
+.history-empty__text {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0 0 16px 0;
+  max-width: 280px;
+  line-height: 1.6;
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+  .subscription-card__inactive-text {
+    font-size: 14px;
+  }
+}
+
+/* Стили для светлой темы */
+.light-theme .subscription-card__badge--inactive {
+  background: rgba(255, 107, 107, 0.1) !important;
+  color: #d32f2f !important;
+}
+
+.light-theme .subscription-card__inactive-text {
+  color: #4a4b5e;
+}

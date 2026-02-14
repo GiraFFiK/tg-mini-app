@@ -7,7 +7,6 @@ import Header from "./components/Header";
 import Navigation from "./components/Navigation";
 import Home from "./components/Home";
 import Topup from "./components/Topup";
-import Referral from "./components/Referral";
 import Settings from "./components/Settings";
 
 export default function App() {
@@ -19,8 +18,6 @@ export default function App() {
         return <Home />;
       case "topup":
         return <Topup />;
-      case "referral":
-        return <Referral />;
       case "settings":
         return <Settings />;
       default:

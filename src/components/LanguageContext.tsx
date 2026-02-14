@@ -34,6 +34,11 @@ const translations = {
     instructions_soon: "Скоро",
     instructions_placeholder:
       "Инструкция по настройке появится здесь. Это временное сообщение.",
+    no_purchases_title: "История покупок пуста",
+    no_purchases_text:
+      "Вы еще ничего не купили. Пора это исправить! Выберите подходящий пакет и получите доступ ко всем функциям.",
+    go_to_topup: "Перейти к покупке",
+    subscription_inactive: "Подписка не активирована. Оформите её, чтобы получить доступ к VPN.",
 
     // Top Up
     subscription_title: "Оформление подписки",
@@ -113,7 +118,13 @@ const translations = {
     choose_device: "Choose device",
     device_instructions: "Select a device to view setup instructions",
     instructions_soon: "Soon",
-    instructions_placeholder: "Setup instructions will appear here. This is a temporary message.",
+    instructions_placeholder:
+      "Setup instructions will appear here. This is a temporary message.",
+    no_purchases_title: "Purchase history is empty",
+    no_purchases_text:
+      "You haven't purchased anything yet. Time to fix that! Choose a suitable plan and get access to all features.",
+    go_to_topup: "Go to plans",
+    subscription_inactive: "Subscription is not active. Subscribe to get access to VPN.",
 
     // Top Up
     subscription_title: "Subscription Plans",
