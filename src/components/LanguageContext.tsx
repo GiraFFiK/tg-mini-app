@@ -25,8 +25,8 @@ const translations = {
     show_more: "Показать еще",
     show_less: "Скрыть",
     expired: "Истек",
-    activation_code: "Код активации",
-    replace_code: "Заменить код",
+    activation_code: "Ключ VPN",
+    replace_code: "Заменить ключ",
     no_subscription_code: "Оформите подписку для получения кода активации",
     choose_device: "Выберите устройство",
     device_instructions:
