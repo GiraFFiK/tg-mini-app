@@ -3,6 +3,7 @@ import { useLanguage } from "./LanguageContext";
 import starsIcon from "../public/6514f1e6-dab4-4d49-806a-3ff22d7793e5.webp";
 import "./Topup.css";
 import { purchaseSubscription } from "../services/api";
+import { useRefresh } from "../../hooks/useRefresh";
 
 interface TopupProps {
   user?: any;
@@ -19,18 +20,31 @@ export default function Topup({ user }: TopupProps) {
 
   const telegramId = user?.telegramId;
 
-  // Получаем данные пользователя из Telegram
+  // Функция получения баланса звезд
+  const fetchStarsBalance = async () => {
+    // TODO: Реальный запрос к бэкенду
+    setTimeout(() => {
+      setStarsBalance(40);
+      setIsLoading(false);
+    }, 500);
+  };
+
+  const { refresh, refreshing } = useRefresh(fetchStarsBalance);
+
+  // Загрузка данных
   useEffect(() => {
-    const tg = window.Telegram?.WebApp;
-    if (tg) {
-      // Здесь должен быть запрос к бэкенду для получения баланса звезд
-      // Пока используем тестовые данные
-      setTimeout(() => {
-        setStarsBalance(40);
-        setIsLoading(false);
-      }, 500);
-    }
+    fetchStarsBalance();
   }, []);
+
+  // Автообновление при фокусе
+  useEffect(() => {
+    const handleFocus = () => {
+      refresh();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [refresh]);
 
   const plans = [
     {
@@ -95,6 +109,10 @@ export default function Topup({ user }: TopupProps) {
         if (result.success) {
           alert(`✅ Подписка оформлена! Добавлено ${result.daysLeft} дней.`);
           setShowInsufficientError(false);
+          // Помечаем, что была покупка для обновления на Home
+          sessionStorage.setItem("justPurchased", "true");
+          // Обновляем баланс после покупки
+          refresh();
         }
       } catch (error) {
         console.error("Purchase error:", error);
@@ -115,6 +133,59 @@ export default function Topup({ user }: TopupProps) {
   return (
     <div className="topup-page">
       <div className="container">
+        {/* Индикатор обновления */}
+        {refreshing && (
+          <div className="refresh-indicator">
+            <div className="refresh-spinner"></div>
+            <span>Обновление баланса...</span>
+          </div>
+        )}
+
+        {/* Заголовок с кнопкой обновления */}
+        <div
+          className="topup__header"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div>
+            <h1 className="topup__title">{t("subscription_title")}</h1>
+            <p className="topup__subtitle">{t("subscription_subtitle")}</p>
+          </div>
+          <button
+            className={`refresh-button ${refreshing ? "refreshing" : ""}`}
+            onClick={refresh}
+            disabled={refreshing}
+            title="Обновить баланс"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                d="M23 4v6h-6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M1 20v-6h6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
         {/* Заголовок */}
         <div className="topup__header">
           <h1 className="topup__title">{t("subscription_title")}</h1>

@@ -10,6 +10,7 @@ import {
   getActivationCode,
   regenerateActivationCode,
 } from "../services/api";
+import { useRefresh } from "../../hooks/useRefresh";
 
 interface HomeProps {
   user?: any;
@@ -23,6 +24,7 @@ export default function Home({ user }: HomeProps) {
   const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
+  const [showRefreshTip, setShowRefreshTip] = useState(false);
 
   // Данные пользователя из Telegram
   const tg = window.Telegram?.WebApp;
@@ -38,32 +40,96 @@ export default function Home({ user }: HomeProps) {
   const initials =
     `${firstName?.[0] || ""}${lastName?.[0] || ""}`.toUpperCase() || "U";
 
-  // Загрузка данных с бэкенда
+  // Функция загрузки данных
+  const fetchData = async () => {
+    if (!telegramId) return;
+
+    try {
+      const subData = await getSubscription(telegramId);
+      setSubscription(subData);
+
+      const codeData = await getActivationCode(telegramId);
+      if (codeData.hasSubscription && codeData.code) {
+        setActivationCode(codeData.code);
+      }
+    } catch (error) {
+      console.error("Error fetching home data:", error);
+    }
+  };
+
+  // Используем хук обновления
+  const { refresh, refreshing, lastUpdated } = useRefresh(async () => {
+    await fetchData();
+  });
+
+  // Загрузка данных при монтировании
   useEffect(() => {
-    const fetchData = async () => {
-      if (!telegramId) return;
+    const init = async () => {
+      await fetchData();
+      setLoading(false);
+    };
+    init();
+  }, [telegramId]);
 
-      try {
-        // Получаем информацию о подписке
-        const subData = await getSubscription(telegramId);
-        setSubscription(subData);
+  // Автоматическое обновление при возвращении на страницу
+  useEffect(() => {
+    const handleFocus = () => {
+      refresh();
+      setShowRefreshTip(false);
+    };
 
-        // Получаем код активации
-        const codeData = await getActivationCode(telegramId);
-        if (codeData.hasSubscription && codeData.code) {
-          setActivationCode(codeData.code);
-        }
-      } catch (error) {
-        console.error("Error fetching home data:", error);
-      } finally {
-        setLoading(false);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        refresh();
+        setShowRefreshTip(false);
       }
     };
 
-    fetchData();
-  }, [telegramId]);
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
-  // История покупок (будет загружаться с бэкенда позже)
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [refresh]);
+
+  // Периодическое обновление каждые 30 секунд
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refresh();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [refresh]);
+
+  // Обновление после действий
+  const handleGenerateNewCode = async () => {
+    if (!subscription?.isActive) return;
+
+    try {
+      const result = await regenerateActivationCode(telegramId);
+      setActivationCode(result.code);
+      setCopied(false);
+      // Показываем подсказку об обновлении
+      setShowRefreshTip(true);
+      setTimeout(() => setShowRefreshTip(false), 3000);
+    } catch (error) {
+      console.error("Error regenerating code:", error);
+    }
+  };
+
+  // Обновление после возвращения с покупки
+  useEffect(() => {
+    // Проверяем, не вернулись ли мы с покупки (можно через sessionStorage)
+    const justPurchased = sessionStorage.getItem("justPurchased");
+    if (justPurchased === "true") {
+      refresh();
+      sessionStorage.removeItem("justPurchased");
+    }
+  }, []);
+
+  // История покупок
   const purchaseHistory: {
     id: number;
     date: string;
@@ -118,18 +184,6 @@ export default function Home({ user }: HomeProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleGenerateNewCode = async () => {
-    if (!subscription?.isActive) return;
-
-    try {
-      const result = await regenerateActivationCode(telegramId);
-      setActivationCode(result.code);
-      setCopied(false);
-    } catch (error) {
-      console.error("Error regenerating code:", error);
-    }
-  };
-
   if (loading) {
     return <div className="loading">Загрузка...</div>;
   }
@@ -143,6 +197,44 @@ export default function Home({ user }: HomeProps) {
   return (
     <div className="home">
       <div className="container">
+        {/* Индикатор обновления */}
+        {refreshing && (
+          <div className="refresh-indicator">
+            <div className="refresh-spinner"></div>
+            <span>Обновление...</span>
+          </div>
+        )}
+
+        {/* Подсказка об обновлении */}
+        {showRefreshTip && (
+          <div className="refresh-tip" onClick={refresh}>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                d="M23 4v6h-6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M1 20v-6h6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span>Нажмите для обновления</span>
+          </div>
+        )}
         {/* Карточка подписки с профилем */}
         <div className="subscription-card">
           {/* Шапка карточки с подпиской и статусом */}
@@ -150,11 +242,45 @@ export default function Home({ user }: HomeProps) {
             <span className="subscription-card__title">
               {t("subscription")}
             </span>
-            <span
-              className={`subscription-card__badge ${!hasSubscription ? "subscription-card__badge--inactive" : ""}`}
-            >
-              {hasSubscription ? t("active") : t("inactive") || "Неактивна"}
-            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              {/* Кнопка ручного обновления */}
+              <button
+                className={`refresh-button ${refreshing ? "refreshing" : ""}`}
+                onClick={refresh}
+                disabled={refreshing}
+                title="Обновить данные"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    d="M23 4v6h-6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M1 20v-6h6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+              <span
+                className={`subscription-card__badge ${!hasSubscription ? "subscription-card__badge--inactive" : ""}`}
+              >
+                {hasSubscription ? t("active") : t("inactive") || "Неактивна"}
+              </span>
+            </div>
           </div>
 
           {/* Блок с аватаром и пользователем */}

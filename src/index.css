@@ -569,3 +569,116 @@ html, body {
     --border-color: rgba(0, 0, 0, 0.08);
   }
 }
+
+/* Индикатор обновления */
+.refresh-indicator {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  padding: 8px 16px;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1000;
+  border: 1px solid var(--border-color);
+  animation: slideDown 0.3s ease;
+}
+
+.refresh-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--text-muted);
+  border-top-color: #6d5dfc;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Кнопка обновления */
+.refresh-button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  border-radius: 50%;
+}
+
+.refresh-button:hover {
+  color: #6d5dfc;
+  background: rgba(109, 93, 252, 0.1);
+}
+
+.refresh-button.refreshing {
+  animation: spin 1s linear infinite;
+  color: #6d5dfc;
+}
+
+.refresh-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Подсказка об обновлении */
+.refresh-tip {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  padding: 12px 24px;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1000;
+  border: 1px solid #6d5dfc;
+  box-shadow: 0 4px 12px rgba(109, 93, 252, 0.2);
+  cursor: pointer;
+  animation: slideUp 0.3s ease;
+}
+
+.refresh-tip:hover {
+  background: rgba(109, 93, 252, 0.1);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
