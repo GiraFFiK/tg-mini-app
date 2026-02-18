@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { InternalAxiosRequestConfig } from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -10,18 +11,31 @@ const api = axios.create({
 });
 
 // Добавляем initData в каждый запрос
-api.interceptors.request.use((config) => {
-  const tg = window.Telegram?.WebApp;
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const tg = (window as any).Telegram?.WebApp;
   if (tg?.initData) {
     config.headers['X-Telegram-Init-Data'] = tg.initData;
   }
   return config;
 });
 
-// Аутентификация
-export const auth = async (initData: string) => {
-  const response = await api.post('/auth', { initData });
-  return response.data;
+// Аутентификация при загрузке приложения
+export const authenticate = async () => {
+  const tg = (window as any).Telegram?.WebApp;
+  if (!tg?.initData) {
+    console.error('No Telegram initData');
+    return null;
+  }
+
+  try {
+    const response = await api.post('/auth', { 
+      initData: tg.initData 
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Auth error:', error);
+    return null;
+  }
 };
 
 // Пользователь

@@ -1,33 +1,69 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "./LanguageContext";
 import starsIcon from "../public/6514f1e6-dab4-4d49-806a-3ff22d7793e5.webp";
 import "./Home.css";
 import apple from "../public/apple1-logo-svgrepo-com.svg";
 import android from "../public/android-svgrepo-com.svg";
 import windows from "../public/microsoft-windows-22-logo-svgrepo-com.svg";
+import {
+  getSubscription,
+  getActivationCode,
+  regenerateActivationCode,
+} from "../services/api";
 
-export default function Home() {
+interface HomeProps {
+  user?: any;
+}
+
+export default function Home({ user }: HomeProps) {
   const { t } = useLanguage();
   const [showAllHistory, setShowAllHistory] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [activationCode, setActivationCode] = useState("ABCD-EFGH-IJKL-MNOP");
+  const [activationCode, setActivationCode] = useState("");
+  const [subscription, setSubscription] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
-
-  // Проверка наличия подписки (для демо - можно менять для теста)
-  const hasSubscription = true; // true - есть подписка, false - нет подписки
 
   // Данные пользователя из Telegram
   const tg = window.Telegram?.WebApp;
-  const user = tg?.initDataUnsafe?.user;
+  const tgUser = tg?.initDataUnsafe?.user;
 
-  const username = user?.username || user?.first_name || "User";
-  const firstName = user?.first_name || "";
-  const lastName = user?.last_name || "";
-  const photoUrl = user?.photo_url;
+  const username =
+    tgUser?.username || tgUser?.first_name || user?.username || "User";
+  const firstName = tgUser?.first_name || user?.firstName || "";
+  const lastName = tgUser?.last_name || user?.lastName || "";
+  const photoUrl = tgUser?.photo_url;
+  const telegramId = user?.telegramId || String(tgUser?.id || "");
+
   const initials =
     `${firstName?.[0] || ""}${lastName?.[0] || ""}`.toUpperCase() || "U";
 
-  // История покупок (пустая для демо)
+  // Загрузка данных с бэкенда
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!telegramId) return;
+
+      try {
+        // Получаем информацию о подписке
+        const subData = await getSubscription(telegramId);
+        setSubscription(subData);
+
+        // Получаем код активации
+        const codeData = await getActivationCode(telegramId);
+        if (codeData.hasSubscription && codeData.code) {
+          setActivationCode(codeData.code);
+        }
+      } catch (error) {
+        console.error("Error fetching home data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [telegramId]);
+
+  // История покупок (будет загружаться с бэкенда позже)
   const purchaseHistory: {
     id: number;
     date: string;
@@ -76,25 +112,33 @@ export default function Home() {
   };
 
   const handleCopyCode = () => {
-    if (!hasSubscription) return;
+    if (!subscription?.isActive) return;
     navigator.clipboard.writeText(activationCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleGenerateNewCode = () => {
-    if (!hasSubscription) return;
-    const newCode =
-      Math.random().toString(36).substring(2, 6).toUpperCase() +
-      "-" +
-      Math.random().toString(36).substring(2, 6).toUpperCase() +
-      "-" +
-      Math.random().toString(36).substring(2, 6).toUpperCase() +
-      "-" +
-      Math.random().toString(36).substring(2, 6).toUpperCase();
-    setActivationCode(newCode);
-    setCopied(false);
+  const handleGenerateNewCode = async () => {
+    if (!subscription?.isActive) return;
+
+    try {
+      const result = await regenerateActivationCode(telegramId);
+      setActivationCode(result.code);
+      setCopied(false);
+    } catch (error) {
+      console.error("Error regenerating code:", error);
+    }
   };
+
+  if (loading) {
+    return <div className="loading">Загрузка...</div>;
+  }
+
+  const hasSubscription = subscription?.isActive || false;
+  const daysLeft = subscription?.daysLeft || 0;
+  const expiryDate = subscription?.subscriptionUntil
+    ? new Date(subscription.subscriptionUntil).toLocaleDateString("ru-RU")
+    : "";
 
   return (
     <div className="home">
@@ -138,7 +182,9 @@ export default function Home() {
           {hasSubscription ? (
             <div className="subscription-card__content">
               <div className="subscription-card__days">
-                <span className="subscription-card__days-number">15</span>
+                <span className="subscription-card__days-number">
+                  {daysLeft}
+                </span>
                 <span className="subscription-card__days-label">
                   {t("days_left")}
                 </span>
@@ -147,13 +193,13 @@ export default function Home() {
               <div className="subscription-card__progress">
                 <div
                   className="subscription-card__progress-bar"
-                  style={{ width: "50%" }}
+                  style={{ width: `${(daysLeft / 30) * 100}%` }}
                 />
               </div>
 
               <div className="subscription-card__footer">
                 <span className="subscription-card__date">
-                  {t("valid_until")} 25.03.2026
+                  {t("valid_until")} {expiryDate}
                 </span>
               </div>
             </div>

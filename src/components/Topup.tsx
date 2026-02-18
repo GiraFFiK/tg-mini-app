@@ -2,14 +2,22 @@ import { useState, useEffect } from "react";
 import { useLanguage } from "./LanguageContext";
 import starsIcon from "../public/6514f1e6-dab4-4d49-806a-3ff22d7793e5.webp";
 import "./Topup.css";
+import { purchaseSubscription } from "../services/api";
 
-export default function Topup() {
+interface TopupProps {
+  user?: any;
+}
+
+export default function Topup({ user }: TopupProps) {
   const { t } = useLanguage();
   const [selectedPlan, setSelectedPlan] = useState<string>("month");
   const [starsBalance, setStarsBalance] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [showInsufficientError, setShowInsufficientError] =
     useState<boolean>(false);
+  const [processing, setProcessing] = useState<boolean>(false);
+
+  const telegramId = user?.telegramId;
 
   // Получаем данные пользователя из Telegram
   useEffect(() => {
@@ -18,7 +26,7 @@ export default function Topup() {
       // Здесь должен быть запрос к бэкенду для получения баланса звезд
       // Пока используем тестовые данные
       setTimeout(() => {
-        setStarsBalance(40); // Умышленно мало для теста ошибки
+        setStarsBalance(40);
         setIsLoading(false);
       }, 500);
     }
@@ -67,37 +75,35 @@ export default function Topup() {
     },
   ];
 
-  // const formatStars = (stars: number) => {
-  //   return (
-  //     <span className="stars-display">
-  //       {stars}
-  //       <img
-  //         src={starsIcon}
-  //         alt="⭐"
-  //         className="stars-display__icon"
-  //         width="24"
-  //         height="24"
-  //       />
-  //     </span>
-  //   );
-  // };
-
   const handleTopUp = () => {
-    // Открываем PremiumBot
     window.Telegram?.WebApp?.openTelegramLink?.("https://t.me/PremiumBot");
   };
 
-  const handleSubscribe = () => {
+  const handleSubscribe = async () => {
     const selected = plans.find((p) => p.id === selectedPlan);
-    if (!selected?.active) return;
+    if (!selected?.active || !telegramId) return;
 
     if (starsBalance >= selected.stars) {
-      // Здесь логика оплаты подписки звездами
-      setShowInsufficientError(false);
-      alert(`Оплачено ${selected.stars} ⭐️`);
+      setProcessing(true);
+      try {
+        const result = await purchaseSubscription(
+          telegramId,
+          selectedPlan,
+          selected.stars,
+        );
+
+        if (result.success) {
+          alert(`✅ Подписка оформлена! Добавлено ${result.daysLeft} дней.`);
+          setShowInsufficientError(false);
+        }
+      } catch (error) {
+        console.error("Purchase error:", error);
+        alert("❌ Ошибка при оформлении подписки");
+      } finally {
+        setProcessing(false);
+      }
     } else {
       setShowInsufficientError(true);
-      // Автоматически скрываем ошибку через 5 секунд
       setTimeout(() => setShowInsufficientError(false), 5000);
     }
   };
@@ -264,8 +270,9 @@ export default function Topup() {
             <button
               className={`topup__button ${showInsufficientError ? "topup__button--error" : ""}`}
               onClick={handleSubscribe}
+              disabled={processing}
             >
-              <span>{t("subscribe")}</span>
+              <span>{processing ? "Обработка..." : t("subscribe")}</span>
               <span className="topup__button-price">
                 <span>{selectedPlanData.stars}</span>
                 <img
@@ -289,8 +296,6 @@ export default function Topup() {
                 </p>
               </div>
             )}
-
-            {/* <p className="topup__terms">{t("terms")}</p> */}
           </div>
         )}
       </div>

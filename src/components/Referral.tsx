@@ -1,96 +1,63 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "./LanguageContext";
 import "./Referral.css";
+import { getReferralInfo } from "../services/api";
 
-export default function Referral() {
+interface ReferralProps {
+  user?: any;
+}
+
+export default function Referral({ user }: ReferralProps) {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
   const [showAllReferrals, setShowAllReferrals] = useState(false);
+  const [referralData, setReferralData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Данные пользователя из Telegram
-  const tg = window.Telegram?.WebApp;
-  const user = tg?.initDataUnsafe?.user;
-//   const username = user?.username || user?.first_name || "User";
+  const telegramId = user?.telegramId;
 
-  // Реферальная ссылка (в реальном приложении должна генерироваться на бэкенде)
-  const referralLink = `https://t.me/${tg?.initDataUnsafe?.user?.username || "app"}?start=ref_${user?.id || "12345"}`;
+  useEffect(() => {
+    const fetchReferralData = async () => {
+      if (!telegramId) return;
+      
+      try {
+        const data = await getReferralInfo(telegramId);
+        setReferralData(data);
+      } catch (error) {
+        console.error("Error fetching referral data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Список приглашенных людей (те, кто уже перешел по ссылке)
-  const referrals = [
-    {
-      id: 1,
-      username: "alex_petrov",
-      firstName: "Алексей",
-      date: "14.02.2026",
-      status: "activated", // activated = перешел и получил бонус
-      bonus: 3,
-    },
-    {
-      id: 2,
-      username: "maria_z",
-      firstName: "Мария",
-      date: "12.02.2026",
-      status: "activated",
-      bonus: 3,
-    },
-    {
-      id: 3,
-      username: "dmitry_kov",
-      firstName: "Дмитрий",
-      date: "10.02.2026",
-      status: "activated",
-      bonus: 3,
-    },
-    {
-      id: 4,
-      username: "elena_k",
-      firstName: "Елена",
-      date: "08.02.2026",
-      status: "activated",
-      bonus: 3,
-    },
-    {
-      id: 5,
-      username: "sergey_m",
-      firstName: "Сергей",
-      date: "05.02.2026",
-      status: "pending", // pending = перешел, но еще не активировал бота
-      bonus: 0,
-    },
-    {
-      id: 6,
-      username: "anna_z",
-      firstName: "Анна",
-      date: "03.02.2026",
-      status: "activated",
-      bonus: 3,
-    },
-  ];
-
-  const visibleReferrals = showAllReferrals ? referrals : referrals.slice(0, 4);
-
-  const activatedReferrals = referrals.filter(
-    (r) => r.status === "activated",
-  ).length;
-//   const pendingReferrals = referrals.filter(
-//     (r) => r.status === "pending",
-//   ).length;
-  const totalBonus = activatedReferrals * 3;
+    fetchReferralData();
+  }, [telegramId]);
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(referralLink);
+    if (!referralData?.referralLink) return;
+    navigator.clipboard.writeText(referralData.referralLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleShareLink = () => {
+    if (!referralData?.referralLink) return;
+    
     const text =
       t("share_text") ||
       `Присоединяйся по моей реферальной ссылке и получи 3 дня бесплатного VPN!`;
-    tg?.openTelegramLink?.(
-      `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`,
+    
+    window.Telegram?.WebApp?.openTelegramLink?.(
+      `https://t.me/share/url?url=${encodeURIComponent(referralData.referralLink)}&text=${encodeURIComponent(text)}`,
     );
   };
+
+  if (loading) {
+    return <div className="loading">Загрузка...</div>;
+  }
+
+  const referrals = referralData?.invitedList || [];
+  const visibleReferrals = showAllReferrals ? referrals : referrals.slice(0, 4);
 
   return (
     <div className="referral-page">
@@ -111,20 +78,20 @@ export default function Referral() {
             <span className="referral-stat__label">
               {t("total_invited") || "Всего приглашено"}
             </span>
-            <span className="referral-stat__value">{referrals.length}</span>
+            <span className="referral-stat__value">{referralData?.totalInvited || 0}</span>
           </div>
           <div className="referral-stat">
             <span className="referral-stat__label">
               {t("activated") || "Активировано"} <span>&nbsp;</span>
             </span>
-            <span className="referral-stat__value">{activatedReferrals}</span>
+            <span className="referral-stat__value">{referralData?.activatedCount || 0}</span>
           </div>
           <div className="referral-stat">
             <span className="referral-stat__label">
               {t("bonus_days") || "Бонусных дней"}
             </span>
             <span className="referral-stat__value referral-stat__value--bonus">
-              +{totalBonus}
+              +{referralData?.totalBonus || 0}
             </span>
           </div>
         </div>
@@ -155,7 +122,7 @@ export default function Referral() {
 
           <div className="referral-link__container">
             <div className="referral-link__wrapper">
-              <span className="referral-link__text">{referralLink}</span>
+              <span className="referral-link__text">{referralData?.referralLink || ""}</span>
             </div>
             <div className="referral-link__actions">
               <button
@@ -242,17 +209,14 @@ export default function Referral() {
           {referrals.length > 0 ? (
             <>
               <div className="referrals-list">
-                {visibleReferrals.map((referral) => (
+                {visibleReferrals.map((referral: any) => (
                   <div key={referral.id} className="referral-item">
                     <div className="referral-item__left">
                       <div className="referral-item__avatar">
-                        {referral.firstName[0]}
+                        {referral.firstName?.[0] || "U"}
                       </div>
                       <div className="referral-item__info">
                         <div className="referral-item__name">
-                          {/* <span className="referral-item__firstname">
-                            {referral.firstName}
-                          </span> */}
                           <span className="referral-item__username">
                             @{referral.username}
                           </span>
