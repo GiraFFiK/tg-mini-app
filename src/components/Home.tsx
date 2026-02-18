@@ -204,6 +204,11 @@ export default function Home({ user }: HomeProps) {
             <span>Обновление...</span>
           </div>
         )}
+        {lastUpdated && (
+          <span className="last-updated">
+            Обновлено: {lastUpdated.toLocaleTimeString()}
+          </span>
+        )}
 
         {/* Подсказка об обновлении */}
         {showRefreshTip && (
