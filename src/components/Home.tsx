@@ -7,7 +7,6 @@ import android from "../public/android-svgrepo-com.svg";
 import windows from "../public/microsoft-windows-22-logo-svgrepo-com.svg";
 import {
   getSubscription,
-  //getActivationCode,
   regenerateActivationCode,
 } from "../services/api";
 import { useRefresh } from "../../hooks/useRefresh";
@@ -25,6 +24,7 @@ export default function Home({ user }: HomeProps) {
   const [loading, setLoading] = useState(true);
   const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
   const [showRefreshTip, setShowRefreshTip] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string>("");
 
   // Данные пользователя из Telegram
   const tg = window.Telegram?.WebApp;
@@ -40,72 +40,59 @@ export default function Home({ user }: HomeProps) {
   const initials =
     `${firstName?.[0] || ""}${lastName?.[0] || ""}`.toUpperCase() || "U";
 
-  const [debugInfo, setDebugInfo] = useState<string>("");
-
   // Функция загрузки данных
   const fetchData = async () => {
-  if (!telegramId) {
-    setDebugInfo("❌ Нет telegramId");
-    return;
-  }
-
-  setDebugInfo("🔍 Запрашиваем данные...");
-
-  try {
-    // Добавляем timestamp, чтобы избежать кэширования
-    const timestamp = Date.now();
-    console.log(`📡 Запрос к API (${timestamp})...`);
-    
-    const subData = await getSubscription(telegramId);
-    console.log("📦 Ответ от API:", subData);
-    
-    // ПРЯМАЯ УСТАНОВКА - без хитростей
-    if (subData && typeof subData.isActive === 'boolean') {
-      console.log("✅ Устанавливаем isActive =", subData.isActive);
-      setSubscription({
-        isActive: subData.isActive,
-        daysLeft: subData.daysLeft || 0,
-        subscriptionUntil: subData.subscriptionUntil || null
-      });
-      setDebugInfo("✅ Данные обновлены: isActive=" + subData.isActive);
-    } else {
-      console.error("❌ Неверный формат данных:", subData);
-      setDebugInfo("❌ Неверный формат данных");
+    if (!telegramId) {
+      setDebugInfo("❌ Нет telegramId");
+      return;
     }
-  } catch (error) {
-    setDebugInfo("❌ Ошибка: " + error);
-    console.error("Ошибка fetchData:", error);
-  }
-};
 
-// Загрузка данных при монтировании - УСИЛЕННАЯ ВЕРСИЯ
-useEffect(() => {
-  const init = async () => {
-    console.log("🔄 Компонент Home монтируется, telegramId=", telegramId);
-    if (telegramId) {
-      await fetchData();
-      console.log("✅ fetchData выполнен");
-    } else {
-      console.log("❌ telegramId отсутствует");
+    setDebugInfo("🔍 Запрашиваем данные...");
+
+    try {
+      const timestamp = Date.now();
+      console.log(`📡 Запрос к API (${timestamp})...`);
+      
+      const subData = await getSubscription(telegramId);
+      console.log("📦 Ответ от API:", subData);
+      
+      if (subData && typeof subData.isActive === 'boolean') {
+        console.log("✅ Устанавливаем isActive =", subData.isActive);
+        setSubscription({
+          isActive: subData.isActive,
+          daysLeft: subData.daysLeft || 0,
+          subscriptionUntil: subData.subscriptionUntil || null
+        });
+        setDebugInfo("✅ Данные обновлены: isActive=" + subData.isActive);
+      } else {
+        console.error("❌ Неверный формат данных:", subData);
+        setDebugInfo("❌ Неверный формат данных");
+      }
+    } catch (error) {
+      setDebugInfo("❌ Ошибка: " + error);
+      console.error("Ошибка fetchData:", error);
     }
-    setLoading(false);
   };
-  init();
-}, [telegramId]); // Важно: зависимость от telegramId
+
+  // ЕДИНСТВЕННЫЙ useEffect для загрузки данных при монтировании
+  useEffect(() => {
+    const init = async () => {
+      console.log("🔄 Компонент Home монтируется, telegramId=", telegramId);
+      if (telegramId) {
+        await fetchData();
+        console.log("✅ fetchData выполнен");
+      } else {
+        console.log("❌ telegramId отсутствует");
+      }
+      setLoading(false);
+    };
+    init();
+  }, [telegramId]); // Важно: зависимость от telegramId
 
   // Используем хук обновления
   const { refresh, refreshing, lastUpdated } = useRefresh(async () => {
     await fetchData();
   });
-
-  // Загрузка данных при монтировании
-  useEffect(() => {
-    const init = async () => {
-      await fetchData();
-      setLoading(false);
-    };
-    init();
-  }, [telegramId]);
 
   // Автоматическое обновление при возвращении на страницу
   useEffect(() => {
@@ -147,7 +134,6 @@ useEffect(() => {
       const result = await regenerateActivationCode(telegramId);
       setActivationCode(result.code);
       setCopied(false);
-      // Показываем подсказку об обновлении
       setShowRefreshTip(true);
       setTimeout(() => setShowRefreshTip(false), 3000);
     } catch (error) {
@@ -157,7 +143,6 @@ useEffect(() => {
 
   // Обновление после возвращения с покупки
   useEffect(() => {
-    // Проверяем, не вернулись ли мы с покупки (можно через sessionStorage)
     const justPurchased = sessionStorage.getItem("justPurchased");
     if (justPurchased === "true") {
       refresh();
@@ -276,6 +261,7 @@ useEffect(() => {
             <span>Нажмите для обновления</span>
           </div>
         )}
+        
         {/* Карточка подписки с профилем */}
         <div className="subscription-card">
           {/* Шапка карточки с подпиской и статусом */}
@@ -588,6 +574,9 @@ useEffect(() => {
           </pre>
           <pre>
             <strong>hasSubscription:</strong> {String(hasSubscription)}
+          </pre>
+          <pre>
+            <strong>telegramId:</strong> {telegramId}
           </pre>
         </div>
 
