@@ -33,16 +33,13 @@ export const authenticate = async () => {
       return response.data;
     } catch (error) {
       console.error('❌ Ошибка аутентификации через Telegram:', error);
-      // Продолжаем выполнение, пробуем запасной вариант
     }
   }
 
-  // Запасной вариант - данные из Telegram WebApp или тестовые
-  console.warn('⚠️ Используем запасной вариант аутентификации');
-  
   // Пробуем получить данные из tgUser
   const tgUser = tg?.initDataUnsafe?.user;
   if (tgUser) {
+    console.log("📱 Данные из Telegram WebApp:", tgUser);
     return {
       id: tgUser.id,
       telegramId: String(tgUser.id),
@@ -52,14 +49,15 @@ export const authenticate = async () => {
     };
   }
 
-  // Если ничего нет - возвращаем тестовые данные
-  // return {
-  //   id: 1,
-  //   telegramId: "6161757932",
-  //   username: "h00dr1",
-  //   firstName: "Am",
-  //   lastName: "Am"
-  // };
+  // Если ничего нет - возвращаем тестовые данные с ВАШИМ ID
+  console.warn('⚠️ Используем тестовые данные');
+  return {
+    id: 1,
+    telegramId: "000", // ← ВАШ РЕАЛЬНЫЙ ID
+    username: "h00dr1",
+    firstName: "Am",
+    lastName: "Am"
+  };
 };
 
 // Пользователь
