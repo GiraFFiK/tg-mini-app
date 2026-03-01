@@ -7,7 +7,7 @@ import android from "../public/android-svgrepo-com.svg";
 import windows from "../public/microsoft-windows-22-logo-svgrepo-com.svg";
 import {
   getSubscription,
-  getActivationCode,
+  //getActivationCode,
   regenerateActivationCode,
 } from "../services/api";
 import { useRefresh } from "../../hooks/useRefresh";
@@ -40,20 +40,23 @@ export default function Home({ user }: HomeProps) {
   const initials =
     `${firstName?.[0] || ""}${lastName?.[0] || ""}`.toUpperCase() || "U";
 
+  const [debugInfo, setDebugInfo] = useState<string>("");
+
   // Функция загрузки данных
   const fetchData = async () => {
-    if (!telegramId) return;
+    if (!telegramId) {
+      setDebugInfo("❌ Нет telegramId");
+      return;
+    }
+
+    setDebugInfo("🔍 Запрашиваем данные...");
 
     try {
       const subData = await getSubscription(telegramId);
+      setDebugInfo("✅ Данные: " + JSON.stringify(subData));
       setSubscription(subData);
-
-      const codeData = await getActivationCode(telegramId);
-      if (codeData.hasSubscription && codeData.code) {
-        setActivationCode(codeData.code);
-      }
     } catch (error) {
-      console.error("Error fetching home data:", error);
+      setDebugInfo("❌ Ошибка: " + error);
     }
   };
 
@@ -450,6 +453,28 @@ export default function Home({ user }: HomeProps) {
             </div>
           )}
         </div>
+
+        {debugInfo && (
+          <div
+            style={{
+              position: "fixed",
+              top: "10px",
+              left: "10px",
+              right: "10px",
+              background: "rgba(0,0,0,0.9)",
+              color: "#fff",
+              padding: "15px",
+              borderRadius: "10px",
+              zIndex: 9999,
+              fontSize: "12px",
+              whiteSpace: "pre-wrap",
+              border: "2px solid #ff6b6b",
+            }}
+          >
+            <strong>🔧 ОТЛАДКА</strong>
+            <pre>{debugInfo}</pre>
+          </div>
+        )}
 
         {/* Раздел выбора устройства */}
         <div className="devices-section">
