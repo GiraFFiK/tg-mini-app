@@ -44,21 +44,39 @@ export default function Home({ user }: HomeProps) {
 
   // Функция загрузки данных
   const fetchData = async () => {
-    if (!telegramId) {
-      setDebugInfo("❌ Нет telegramId");
-      return;
-    }
+  if (!telegramId) {
+    setDebugInfo("❌ Нет telegramId");
+    return;
+  }
 
-    setDebugInfo("🔍 Запрашиваем данные...");
+  setDebugInfo("🔍 Запрашиваем данные...");
 
-    try {
-      const subData = await getSubscription(telegramId);
-      setDebugInfo("✅ Данные: " + JSON.stringify(subData));
-      setSubscription(subData);
-    } catch (error) {
-      setDebugInfo("❌ Ошибка: " + error);
-    }
-  };
+  try {
+    const subData = await getSubscription(telegramId);
+    console.log("📦 Данные с сервера:", subData);
+    
+    // Важно: создаем новый объект для обновления состояния
+    const newSubscription = {
+      isActive: subData.isActive,
+      daysLeft: subData.daysLeft,
+      subscriptionUntil: subData.subscriptionUntil
+    };
+    
+    console.log("📦 Устанавливаем новое состояние:", newSubscription);
+    setSubscription(newSubscription);
+    setDebugInfo("✅ Данные обновлены: " + JSON.stringify(newSubscription));
+    
+    // Принудительно вызываем перерисовку через таймер
+    setTimeout(() => {
+      // Исправляем: добавляем тип для prev
+      setSubscription((prev: any) => ({ ...prev }));
+    }, 100);
+    
+  } catch (error) {
+    setDebugInfo("❌ Ошибка: " + error);
+    console.error("Ошибка fetchData:", error);
+  }
+};
 
   // Используем хук обновления
   const { refresh, refreshing, lastUpdated } = useRefresh(async () => {
@@ -531,6 +549,31 @@ export default function Home({ user }: HomeProps) {
               </div>
             )}
           </div>
+        </div>
+
+        {/* ВРЕМЕННЫЙ ОТЛАДОЧНЫЙ БЛОК */}
+        <div
+          style={{
+            position: "fixed",
+            top: 10,
+            left: 10,
+            right: 10,
+            background: "#1a1b2e",
+            color: "#fff",
+            padding: 20,
+            zIndex: 9999,
+            borderRadius: 10,
+            border: "2px solid #6d5dfc",
+          }}
+        >
+          <h4>🔧 Отладка данных</h4>
+          <pre>
+            <strong>subscription state:</strong>{" "}
+            {JSON.stringify(subscription, null, 2)}
+          </pre>
+          <pre>
+            <strong>hasSubscription:</strong> {String(hasSubscription)}
+          </pre>
         </div>
 
         {/* История покупок */}
