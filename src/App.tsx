@@ -9,7 +9,7 @@ import Home from "./components/Home";
 import Topup from "./components/Topup";
 import Referral from "./components/Referral";
 import Settings from "./components/Settings";
-// import { authenticate } from "./services/api";
+import { authenticate } from "./services/api";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<string>("home");
@@ -18,32 +18,32 @@ export default function App() {
 
   useEffect(() => {
     const initApp = async () => {
-    //   const tg = window.Telegram?.WebApp;
-    //   if (tg) {
-    //     tg.expand();
-    //     tg.ready();
-    //   }
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        tg.expand();
+        tg.ready();
+      }
 
-    //   const userData = await authenticate();
-    //   if (userData) {
-    //     setUser(userData);
-    //     console.log("User authenticated:", userData);
-    //   }
-    //   setLoading(false);
-    // };
+      const userData = await authenticate();
+      if (userData) {
+        setUser(userData);
+        console.log("User authenticated:", userData);
+      }
+      setLoading(false);
+    };
 
     // Временно, для локального теста
-    const testUser = {
-      id: 1,
-      telegramId: "6161757932", // Ваш реальный ID из базы
-      username: "h00dr1",
-      firstName: "Am",
-      lastName: "Am"
-    };
+  //   const testUser = {
+  //     id: 1,
+  //     telegramId: "6161757932", // Ваш реальный ID из базы
+  //     username: "h00dr1",
+  //     firstName: "Am",
+  //     lastName: "Am"
+  //   };
     
-    setUser(testUser);
-    setLoading(false);
-  };
+  //   setUser(testUser);
+  //   setLoading(false);
+  // };
 
     initApp();
   }, []);
