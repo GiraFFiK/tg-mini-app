@@ -52,31 +52,46 @@ export default function Home({ user }: HomeProps) {
   setDebugInfo("🔍 Запрашиваем данные...");
 
   try {
+    // Добавляем timestamp, чтобы избежать кэширования
+    const timestamp = Date.now();
+    console.log(`📡 Запрос к API (${timestamp})...`);
+    
     const subData = await getSubscription(telegramId);
-    console.log("📦 Данные с сервера:", subData);
+    console.log("📦 Ответ от API:", subData);
     
-    // Важно: создаем новый объект для обновления состояния
-    const newSubscription = {
-      isActive: subData.isActive,
-      daysLeft: subData.daysLeft,
-      subscriptionUntil: subData.subscriptionUntil
-    };
-    
-    console.log("📦 Устанавливаем новое состояние:", newSubscription);
-    setSubscription(newSubscription);
-    setDebugInfo("✅ Данные обновлены: " + JSON.stringify(newSubscription));
-    
-    // Принудительно вызываем перерисовку через таймер
-    setTimeout(() => {
-      // Исправляем: добавляем тип для prev
-      setSubscription((prev: any) => ({ ...prev }));
-    }, 100);
-    
+    // ПРЯМАЯ УСТАНОВКА - без хитростей
+    if (subData && typeof subData.isActive === 'boolean') {
+      console.log("✅ Устанавливаем isActive =", subData.isActive);
+      setSubscription({
+        isActive: subData.isActive,
+        daysLeft: subData.daysLeft || 0,
+        subscriptionUntil: subData.subscriptionUntil || null
+      });
+      setDebugInfo("✅ Данные обновлены: isActive=" + subData.isActive);
+    } else {
+      console.error("❌ Неверный формат данных:", subData);
+      setDebugInfo("❌ Неверный формат данных");
+    }
   } catch (error) {
     setDebugInfo("❌ Ошибка: " + error);
     console.error("Ошибка fetchData:", error);
   }
 };
+
+// Загрузка данных при монтировании - УСИЛЕННАЯ ВЕРСИЯ
+useEffect(() => {
+  const init = async () => {
+    console.log("🔄 Компонент Home монтируется, telegramId=", telegramId);
+    if (telegramId) {
+      await fetchData();
+      console.log("✅ fetchData выполнен");
+    } else {
+      console.log("❌ telegramId отсутствует");
+    }
+    setLoading(false);
+  };
+  init();
+}, [telegramId]); // Важно: зависимость от telegramId
 
   // Используем хук обновления
   const { refresh, refreshing, lastUpdated } = useRefresh(async () => {

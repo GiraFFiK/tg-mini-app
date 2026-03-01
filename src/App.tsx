@@ -32,6 +32,19 @@ export default function App() {
       setLoading(false);
     };
 
+    // Временно, для локального теста
+  //   const testUser = {
+  //     id: 1,
+  //     telegramId: "6161757932", // Ваш реальный ID из базы
+  //     username: "h00dr1",
+  //     firstName: "Am",
+  //     lastName: "Am"
+  //   };
+    
+  //   setUser(testUser);
+  //   setLoading(false);
+  // };
+
     initApp();
   }, []);
 
