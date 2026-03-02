@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLanguage } from "./LanguageContext";
 import starsIcon from "../public/6514f1e6-dab4-4d49-806a-3ff22d7793e5.webp";
 import "./Topup.css";
-import { purchaseSubscription } from "../services/api";
+import { purchaseSubscription, getStarsBalance } from "../services/api";
 import { useRefresh } from "../../hooks/useRefresh";
 
 interface TopupProps {
@@ -22,11 +22,18 @@ export default function Topup({ user }: TopupProps) {
 
   // Функция получения баланса звезд
   const fetchStarsBalance = async () => {
-    // TODO: Реальный запрос к бэкенду
-    setTimeout(() => {
-      setStarsBalance(40);
+    if (!telegramId) return;
+    
+    try {
+      setIsLoading(true);
+      const data = await getStarsBalance(telegramId);
+      setStarsBalance(data.balance);
+      console.log("💰 Текущий баланс звезд:", data.balance);
+    } catch (error) {
+      console.error("Ошибка получения баланса:", error);
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   const { refresh } = useRefresh(fetchStarsBalance);
@@ -34,7 +41,7 @@ export default function Topup({ user }: TopupProps) {
   // Загрузка данных
   useEffect(() => {
     fetchStarsBalance();
-  }, []);
+  }, [telegramId]);
 
   // Автообновление при фокусе
   useEffect(() => {
@@ -97,9 +104,11 @@ export default function Topup({ user }: TopupProps) {
     const selected = plans.find((p) => p.id === selectedPlan);
     if (!selected?.active || !telegramId) return;
 
+    // Проверяем, хватает ли звезд
     if (starsBalance >= selected.stars) {
       setProcessing(true);
       try {
+        // 1. Покупаем подписку (бэкенд обновит дату и создаст код)
         const result = await purchaseSubscription(
           telegramId,
           selectedPlan,
@@ -107,12 +116,14 @@ export default function Topup({ user }: TopupProps) {
         );
 
         if (result.success) {
+          // 2. Обновляем баланс (списание произошло на бэкенде)
+          await fetchStarsBalance();
+          
           alert(`✅ Подписка оформлена! Добавлено ${result.daysLeft} дней.`);
           setShowInsufficientError(false);
-          // Помечаем, что была покупка для обновления на Home
+          
+          // 3. Помечаем, что была покупка для обновления на Home
           sessionStorage.setItem("justPurchased", "true");
-          // Обновляем баланс после покупки
-          refresh();
         }
       } catch (error) {
         console.error("Purchase error:", error);
@@ -133,7 +144,6 @@ export default function Topup({ user }: TopupProps) {
   return (
     <div className="topup-page">
       <div className="container">
-
         {/* Заголовок */}
         <div className="topup__header">
           <h1 className="topup__title">{t("subscription_title")}</h1>
@@ -283,13 +293,13 @@ export default function Topup({ user }: TopupProps) {
           ))}
         </div>
 
-        {/* Кнопка оформления и сообщение об ошибке */}
+        {/* Кнопка оформления */}
         {selectedPlanData?.active && (
           <div className="topup__action">
             <button
               className={`topup__button ${showInsufficientError ? "topup__button--error" : ""}`}
               onClick={handleSubscribe}
-              disabled={processing}
+              disabled={processing || isLoading}
             >
               <span>{processing ? "Обработка..." : t("subscribe")}</span>
               <span className="topup__button-price">

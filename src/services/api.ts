@@ -94,4 +94,21 @@ export const regenerateActivationCode = async (telegramId: string) => {
   return response.data;
 };
 
+// Баланс звезд
+export const getStarsBalance = async (telegramId: string) => {
+  console.log("📤 Запрос баланса звезд для:", telegramId);
+  const response = await api.get(`/stars/${telegramId}`);
+  console.log("📥 Ответ баланса:", response.data);
+  return response.data;
+};
+
+// Списание звезд (вызывается после успешной покупки)
+export const deductStars = async (telegramId: string, amount: number) => {
+  console.log("📤 Списание звезд:", amount, "для:", telegramId);
+  const response = await api.post(`/stars/${telegramId}/deduct`, { amount });
+  return response.data;
+};
+
+
+
 export default api;
