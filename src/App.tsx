@@ -9,6 +9,7 @@ import Home from "./components/Home";
 import Topup from "./components/Topup";
 import Referral from "./components/Referral";
 import Settings from "./components/Settings";
+import LoadingScreen from "./components/LoadingScreen";
 import { authenticate } from "./services/api";
 
 export default function App() {
@@ -17,42 +18,38 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initApp = async () => {
-      const tg = window.Telegram?.WebApp;
-      if (tg) {
-        tg.expand();
-        tg.ready();
-      }
-
-      const userData = await authenticate();
-      if (userData) {
-        setUser(userData);
-        console.log("User authenticated:", userData);
-      }
-      setLoading(false);
-    };
-
-    // Временно, для локального теста
-  //   const testUser = {
-  //     id: 1,
-  //     telegramId: "6161757932", // Ваш реальный ID из базы
-  //     username: "h00dr1",
-  //     firstName: "Am",
-  //     lastName: "Am"
-  //   };
-    
-  //   setUser(testUser);
-  //   setLoading(false);
-  // };
-
-    initApp();
-  }, []);
-
-  const renderPage = () => {
-    if (loading) {
-      return <div className="loading">Загрузка...</div>;
+  const initApp = async () => {
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.expand();
+      tg.ready();
     }
 
+    // Засекаем время начала
+    const startTime = Date.now();
+    
+    const userData = await authenticate();
+    if (userData) {
+      setUser(userData);
+      console.log("User authenticated:", userData);
+    }
+    
+    // Вычисляем, сколько прошло времени
+    const elapsedTime = Date.now() - startTime;
+    const minLoadTime = 2000; // 2 секунды
+    
+    // Если прошло меньше минимального времени, ждем остаток
+    if (elapsedTime < minLoadTime) {
+      await new Promise(resolve => setTimeout(resolve, minLoadTime - elapsedTime));
+    }
+    
+    setLoading(false);
+  };
+
+  initApp();
+}, []);
+
+  const renderPage = () => {
     switch (currentPage) {
       case "home":
         return <Home user={user} />;
@@ -72,8 +69,9 @@ export default function App() {
       <LanguageProvider>
         <div className="wrapper">
           <Header />
-          {renderPage()}
+          {loading ? <LoadingScreen  /> : renderPage()}
           <Navigation onPageChange={setCurrentPage} />
+          {/* <LoadingScreen /> */}
         </div>
       </LanguageProvider>
     </ThemeProvider>

@@ -21,10 +21,10 @@ export default function Home({ user }: HomeProps) {
   const [copied, setCopied] = useState(false);
   const [activationCode, setActivationCode] = useState("");
   const [subscription, setSubscription] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
-  const [showRefreshTip, setShowRefreshTip] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<string>("");
+  // const [showRefreshTip, setShowRefreshTip] = useState(false);
+  // const [debugInfo, setDebugInfo] = useState<string>("");
 
   // Данные пользователя из Telegram
   const tg = window.Telegram?.WebApp;
@@ -43,11 +43,11 @@ export default function Home({ user }: HomeProps) {
   // Функция загрузки данных
   const fetchData = async () => {
     if (!telegramId) {
-      setDebugInfo("❌ Нет telegramId");
+      // setDebugInfo("❌ Нет telegramId");
       return;
     }
 
-    setDebugInfo("🔍 Запрашиваем данные...");
+    // setDebugInfo("🔍 Запрашиваем данные...");
 
     try {
       const timestamp = Date.now();
@@ -63,13 +63,13 @@ export default function Home({ user }: HomeProps) {
           daysLeft: subData.daysLeft || 0,
           subscriptionUntil: subData.subscriptionUntil || null
         });
-        setDebugInfo("✅ Данные обновлены: isActive=" + subData.isActive);
+        // setDebugInfo("✅ Данные обновлены: isActive=" + subData.isActive);
       } else {
         console.error("❌ Неверный формат данных:", subData);
-        setDebugInfo("❌ Неверный формат данных");
+        // setDebugInfo("❌ Неверный формат данных");
       }
     } catch (error) {
-      setDebugInfo("❌ Ошибка: " + error);
+      // setDebugInfo("❌ Ошибка: " + error);
       console.error("Ошибка fetchData:", error);
     }
   };
@@ -84,13 +84,13 @@ export default function Home({ user }: HomeProps) {
       } else {
         console.log("❌ telegramId отсутствует");
       }
-      setLoading(false);
+      // setLoading(false);
     };
     init();
   }, [telegramId]); // Важно: зависимость от telegramId
 
   // Используем хук обновления
-  const { refresh, refreshing, lastUpdated } = useRefresh(async () => {
+  const { refresh } = useRefresh(async () => {
     await fetchData();
   });
 
@@ -98,13 +98,13 @@ export default function Home({ user }: HomeProps) {
   useEffect(() => {
     const handleFocus = () => {
       refresh();
-      setShowRefreshTip(false);
+      // setShowRefreshTip(false);
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         refresh();
-        setShowRefreshTip(false);
+        // setShowRefreshTip(false);
       }
     };
 
@@ -134,8 +134,8 @@ export default function Home({ user }: HomeProps) {
       const result = await regenerateActivationCode(telegramId);
       setActivationCode(result.code);
       setCopied(false);
-      setShowRefreshTip(true);
-      setTimeout(() => setShowRefreshTip(false), 3000);
+      // setShowRefreshTip(true);
+      // setTimeout(() => setShowRefreshTip(false), 3000);
     } catch (error) {
       console.error("Error regenerating code:", error);
     }
@@ -205,9 +205,7 @@ export default function Home({ user }: HomeProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (loading) {
-    return <div className="loading">Загрузка...</div>;
-  }
+
 
   const hasSubscription = subscription?.isActive || false;
   const daysLeft = subscription?.daysLeft || 0;
@@ -219,7 +217,7 @@ export default function Home({ user }: HomeProps) {
     <div className="home">
       <div className="container">
         {/* Индикатор обновления */}
-        {refreshing && (
+        {/* {refreshing && (
           <div className="refresh-indicator">
             <div className="refresh-spinner"></div>
             <span>Обновление...</span>
@@ -229,10 +227,10 @@ export default function Home({ user }: HomeProps) {
           <span className="last-updated">
             Обновлено: {lastUpdated.toLocaleTimeString()}
           </span>
-        )}
+        )} */}
 
         {/* Подсказка об обновлении */}
-        {showRefreshTip && (
+        {/* {showRefreshTip && (
           <div className="refresh-tip" onClick={refresh}>
             <svg
               width="16"
@@ -260,7 +258,7 @@ export default function Home({ user }: HomeProps) {
             </svg>
             <span>Нажмите для обновления</span>
           </div>
-        )}
+        )} */}
         
         {/* Карточка подписки с профилем */}
         <div className="subscription-card">
@@ -269,9 +267,9 @@ export default function Home({ user }: HomeProps) {
             <span className="subscription-card__title">
               {t("subscription")}
             </span>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div>
               {/* Кнопка ручного обновления */}
-              <button
+              {/* <button
                 className={`refresh-button ${refreshing ? "refreshing" : ""}`}
                 onClick={refresh}
                 disabled={refreshing}
@@ -301,7 +299,7 @@ export default function Home({ user }: HomeProps) {
                     strokeLinejoin="round"
                   />
                 </svg>
-              </button>
+              </button> */}
               <span
                 className={`subscription-card__badge ${!hasSubscription ? "subscription-card__badge--inactive" : ""}`}
               >
@@ -473,28 +471,6 @@ export default function Home({ user }: HomeProps) {
           )}
         </div>
 
-        {debugInfo && (
-          <div
-            style={{
-              position: "fixed",
-              top: "10px",
-              left: "10px",
-              right: "10px",
-              background: "rgba(0,0,0,0.9)",
-              color: "#fff",
-              padding: "15px",
-              borderRadius: "10px",
-              zIndex: 9999,
-              fontSize: "12px",
-              whiteSpace: "pre-wrap",
-              border: "2px solid #ff6b6b",
-            }}
-          >
-            <strong>🔧 ОТЛАДКА</strong>
-            <pre>{debugInfo}</pre>
-          </div>
-        )}
-
         {/* Раздел выбора устройства */}
         <div className="devices-section">
           <h2 className="devices-section__title">
@@ -550,34 +526,6 @@ export default function Home({ user }: HomeProps) {
               </div>
             )}
           </div>
-        </div>
-
-        {/* ВРЕМЕННЫЙ ОТЛАДОЧНЫЙ БЛОК */}
-        <div
-          style={{
-            position: "fixed",
-            top: 10,
-            left: 10,
-            right: 10,
-            background: "#1a1b2e",
-            color: "#fff",
-            padding: 20,
-            zIndex: 9999,
-            borderRadius: 10,
-            border: "2px solid #6d5dfc",
-          }}
-        >
-          <h4>🔧 Отладка данных</h4>
-          <pre>
-            <strong>subscription state:</strong>{" "}
-            {JSON.stringify(subscription, null, 2)}
-          </pre>
-          <pre>
-            <strong>hasSubscription:</strong> {String(hasSubscription)}
-          </pre>
-          <pre>
-            <strong>telegramId:</strong> {telegramId}
-          </pre>
         </div>
 
         {/* История покупок */}

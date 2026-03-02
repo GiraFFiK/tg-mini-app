@@ -13,7 +13,7 @@ export default function Referral({ user }: ReferralProps) {
   const [copied, setCopied] = useState(false);
   const [showAllReferrals, setShowAllReferrals] = useState(false);
   const [referralData, setReferralData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
 
   const telegramId = user?.telegramId;
 
@@ -28,12 +28,11 @@ export default function Referral({ user }: ReferralProps) {
     }
   };
 
-  const { refresh, refreshing } = useRefresh(fetchReferralData);
+  const { refresh } = useRefresh(fetchReferralData);
 
   useEffect(() => {
     const init = async () => {
       await fetchReferralData();
-      setLoading(false);
     };
     init();
   }, [telegramId]);
@@ -71,47 +70,13 @@ export default function Referral({ user }: ReferralProps) {
     );
   };
 
-  if (loading) {
-    return <div className="loading">Загрузка...</div>;
-  }
-
   const referrals = referralData?.invitedList || [];
   const visibleReferrals = showAllReferrals ? referrals : referrals.slice(0, 4);
 
   return (
     <div className="referral-page">
       <div className="container">
-        {/* Индикатор обновления */}
-        {refreshing && (
-          <div className="refresh-indicator">
-            <div className="refresh-spinner"></div>
-            <span>Обновление...</span>
-          </div>
-        )}
-
-        {/* Заголовок с кнопкой обновления */}
-        <div className="referral__header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div>
-            <h1 className="referral__title">
-              {t("referral_title") || "Реферальная система"}
-            </h1>
-            <p className="referral__subtitle">
-              {t("referral_subtitle") || "Приглашайте друзей и получайте бонусы"}
-            </p>
-          </div>
-          <button 
-            className={`refresh-button ${refreshing ? 'refreshing' : ''}`}
-            onClick={refresh}
-            disabled={refreshing}
-            title="Обновить данные"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M23 4v6h-6" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M1 20v-6h6" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-        </div>
+        
         {/* Заголовок */}
         <div className="referral__header">
           <h1 className="referral__title">

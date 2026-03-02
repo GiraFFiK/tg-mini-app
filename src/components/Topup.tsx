@@ -29,7 +29,7 @@ export default function Topup({ user }: TopupProps) {
     }, 500);
   };
 
-  const { refresh, refreshing } = useRefresh(fetchStarsBalance);
+  const { refresh } = useRefresh(fetchStarsBalance);
 
   // Загрузка данных
   useEffect(() => {
@@ -133,59 +133,7 @@ export default function Topup({ user }: TopupProps) {
   return (
     <div className="topup-page">
       <div className="container">
-        {/* Индикатор обновления */}
-        {refreshing && (
-          <div className="refresh-indicator">
-            <div className="refresh-spinner"></div>
-            <span>Обновление баланса...</span>
-          </div>
-        )}
 
-        {/* Заголовок с кнопкой обновления */}
-        <div
-          className="topup__header"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div>
-            <h1 className="topup__title">{t("subscription_title")}</h1>
-            <p className="topup__subtitle">{t("subscription_subtitle")}</p>
-          </div>
-          <button
-            className={`refresh-button ${refreshing ? "refreshing" : ""}`}
-            onClick={refresh}
-            disabled={refreshing}
-            title="Обновить баланс"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                d="M23 4v6h-6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M1 20v-6h6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
         {/* Заголовок */}
         <div className="topup__header">
           <h1 className="topup__title">{t("subscription_title")}</h1>
