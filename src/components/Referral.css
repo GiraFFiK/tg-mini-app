@@ -610,3 +610,65 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
 }
+
+/* Обновленные стили для аватарок */
+.referral-item__avatar-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #6d5dfc, #9f7aea);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.referral-item__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.referral-item__avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 20px;
+  background: linear-gradient(135deg, #6d5dfc, #9f7aea);
+}
+
+.referral-item__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.referral-item__firstname {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-left: 8px;
+}
+
+.referral-item__name {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+  .referral-item__avatar-wrapper {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .referral-item__avatar-placeholder {
+    font-size: 18px;
+  }
+}

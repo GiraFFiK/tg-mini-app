@@ -13,7 +13,6 @@ export default function Referral({ user }: ReferralProps) {
   const [copied, setCopied] = useState(false);
   const [showAllReferrals, setShowAllReferrals] = useState(false);
   const [referralData, setReferralData] = useState<any>(null);
-  // const [loading, setLoading] = useState(true);
 
   const telegramId = user?.telegramId;
 
@@ -45,7 +44,7 @@ export default function Referral({ user }: ReferralProps) {
   }, [refresh]);
 
   useEffect(() => {
-    const interval = setInterval(refresh, 60000); // Каждую минуту
+    const interval = setInterval(refresh, 60000);
     return () => clearInterval(interval);
   }, [refresh]);
 
@@ -54,7 +53,6 @@ export default function Referral({ user }: ReferralProps) {
     navigator.clipboard.writeText(referralData.referralLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    // Обновляем данные после копирования (на всякий случай)
     refresh();
   };
 
@@ -97,7 +95,7 @@ export default function Referral({ user }: ReferralProps) {
           </div>
           <div className="referral-stat">
             <span className="referral-stat__label">
-              {t("activated") || "Активировано"} <span>&nbsp;</span>
+              {t("activated") || "Активировано"}
             </span>
             <span className="referral-stat__value">{referralData?.activatedCount || 0}</span>
           </div>
@@ -227,14 +225,29 @@ export default function Referral({ user }: ReferralProps) {
                 {visibleReferrals.map((referral: any) => (
                   <div key={referral.id} className="referral-item">
                     <div className="referral-item__left">
-                      <div className="referral-item__avatar">
-                        {referral.firstName?.[0] || "U"}
+                      <div className="referral-item__avatar-wrapper">
+                        {referral.photoUrl ? (
+                          <img
+                            src={referral.photoUrl}
+                            alt={referral.username}
+                            className="referral-item__avatar-img"
+                          />
+                        ) : (
+                          <div className="referral-item__avatar-placeholder">
+                            {referral.firstName?.[0] || "U"}
+                          </div>
+                        )}
                       </div>
                       <div className="referral-item__info">
                         <div className="referral-item__name">
                           <span className="referral-item__username">
                             @{referral.username}
                           </span>
+                          {referral.firstName && (
+                            <span className="referral-item__firstname">
+                              {referral.firstName}
+                            </span>
+                          )}
                         </div>
                         <div className="referral-item__date">
                           {referral.date}
