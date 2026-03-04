@@ -3,6 +3,7 @@ import { useLanguage } from "./LanguageContext";
 import "./Referral.css";
 import { getReferralInfo } from "../services/api";
 import { useRefresh } from "../../hooks/useRefresh";
+import LoadingScreen from "./LoadingScreen"; // 👈 ИМПОРТИРУЕМ LoadingScreen
 
 interface ReferralProps {
   user?: any;
@@ -13,6 +14,7 @@ export default function Referral({ user }: ReferralProps) {
   const [copied, setCopied] = useState(false);
   const [showAllReferrals, setShowAllReferrals] = useState(false);
   const [referralData, setReferralData] = useState<any>(null);
+  const [loading, setLoading] = useState(true); // 👈 ДОБАВЛЯЕМ СОСТОЯНИЕ ЗАГРУЗКИ
 
   const telegramId = user?.telegramId;
 
@@ -24,6 +26,8 @@ export default function Referral({ user }: ReferralProps) {
       setReferralData(data);
     } catch (error) {
       console.error("Error fetching referral data:", error);
+    } finally {
+      setLoading(false); // 👈 ЗАВЕРШАЕМ ЗАГРУЗКУ
     }
   };
 
@@ -67,6 +71,11 @@ export default function Referral({ user }: ReferralProps) {
       `https://t.me/share/url?url=${encodeURIComponent(referralData.referralLink)}&text=${encodeURIComponent(text)}`,
     );
   };
+
+  // 👇 ПОКАЗЫВАЕМ ЗАГРУЗКУ, ПОКА ДАННЫЕ НЕ ПОЛУЧЕНЫ
+  if (loading) {
+    return <LoadingScreen message="Загрузка реферальной системы..." />;
+  }
 
   const referrals = referralData?.invitedList || [];
   const visibleReferrals = showAllReferrals ? referrals : referrals.slice(0, 4);

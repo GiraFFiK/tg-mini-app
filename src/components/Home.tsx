@@ -7,11 +7,12 @@ import android from "../public/android-svgrepo-com.svg";
 import windows from "../public/microsoft-windows-22-logo-svgrepo-com.svg";
 import {
   getSubscription,
-  getActivationCode, // 👈 ДОБАВИТЬ ЭТОТ ИМПОРТ
+  getActivationCode,
   regenerateActivationCode,
   getFullHistory,
 } from "../services/api";
 import { useRefresh } from "../../hooks/useRefresh";
+import LoadingScreen from "./LoadingScreen"; // 👈 ИМПОРТИРУЕМ LoadingScreen
 
 interface HomeProps {
   user?: any;
@@ -61,7 +62,7 @@ export default function Home({ user }: HomeProps) {
     }
   };
 
-  // 👇 НОВАЯ ФУНКЦИЯ для загрузки кода активации
+  // Функция для загрузки кода активации
   const fetchActivationCodeData = async () => {
     if (!telegramId) return;
 
@@ -72,7 +73,7 @@ export default function Home({ user }: HomeProps) {
       if (codeData.hasSubscription && codeData.code) {
         setActivationCode(codeData.code);
       } else {
-        setActivationCode(""); // Очищаем код, если подписка неактивна
+        setActivationCode("");
       }
     } catch (error) {
       console.error("Ошибка fetchActivationCodeData:", error);
@@ -97,7 +98,7 @@ export default function Home({ user }: HomeProps) {
   const fetchAllData = async () => {
     await Promise.all([
       fetchSubscriptionData(),
-      fetchActivationCodeData(), // 👈 ДОБАВЛЕНО
+      fetchActivationCodeData(),
       fetchHistoryData()
     ]);
   };
@@ -217,8 +218,9 @@ export default function Home({ user }: HomeProps) {
     },
   ];
 
+  // 👇 ЗАМЕНЯЕМ обычный текст на красивый компонент загрузки
   if (loading) {
-    return <div className="loading">Загрузка...</div>;
+    return <LoadingScreen message="Загрузка профиля..." />;
   }
 
   const hasSubscription = subscription?.isActive || false;
@@ -333,7 +335,7 @@ export default function Home({ user }: HomeProps) {
           <div className="subscription-card__decoration"></div>
         </div>
 
-        {/* Раздел с кодом активации - связан с состоянием подписки */}
+        {/* Раздел с кодом активации */}
         <div className="activation-section">
           <h2 className="activation-section__title">
             {t("activation_code") || "Код активации"}
