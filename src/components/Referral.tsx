@@ -243,11 +243,6 @@ export default function Referral({ user }: ReferralProps) {
                           <span className="referral-item__username">
                             @{referral.username}
                           </span>
-                          {referral.firstName && (
-                            <span className="referral-item__firstname">
-                              {referral.firstName}
-                            </span>
-                          )}
                         </div>
                         <div className="referral-item__date">
                           {referral.date}
