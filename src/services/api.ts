@@ -109,6 +109,26 @@ export const deductStars = async (telegramId: string, amount: number) => {
   return response.data;
 };
 
+// История покупок
+export const getPurchaseHistory = async (telegramId: string) => {
+  console.log("📤 Запрос истории покупок для:", telegramId);
+  const response = await api.get(`/purchases/history/${telegramId}`);
+  console.log("📥 Ответ истории:", response.data);
+  return response.data;
+};
 
+// История бонусов
+export const getBonusHistory = async (telegramId: string) => {
+  console.log("📤 Запрос истории бонусов для:", telegramId);
+  const response = await api.get(`/purchases/bonus/${telegramId}`);
+  return response.data;
+};
+
+// Полная история (покупки + бонусы)
+export const getFullHistory = async (telegramId: string) => {
+  console.log("📤 Запрос полной истории для:", telegramId);
+  const response = await api.get(`/purchases/full/${telegramId}`);
+  return response.data;
+};
 
 export default api;

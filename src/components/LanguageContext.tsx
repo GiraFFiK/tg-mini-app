@@ -20,7 +20,7 @@ const translations = {
     // Home
     wallet: "allet",
     days_remaining: "дней осталось",
-    purchase_history: "История покупок",
+    purchase_history: "История покупок и бонусов",
     total: "всего",
     show_more: "Показать еще",
     show_less: "Скрыть",
@@ -36,9 +36,16 @@ const translations = {
       "Инструкция по настройке появится здесь. Это временное сообщение.",
     no_purchases_title: "История покупок пуста",
     no_purchases_text:
-      "Вы еще ничего не купили. Пора это исправить! Выберите подходящий пакет и получите доступ ко всем функциям.",
+      "У вас пока нет покупок или бонусов.",
     go_to_topup: "Перейти к покупке",
     subscription_inactive: "Подписка не активирована. Оформите её, чтобы получить доступ к VPN.",
+
+    // НОВЫЕ ПЕРЕВОДЫ ДЛЯ ИСТОРИИ
+    welcome_bonus: "🎁 Бонус за первый вход",
+    referral_bonus: "👥 Реферальный бонус",
+    bonus_days_short: "дн",
+    purchase: "Покупка",
+    bonus: "Бонус",
 
     // Top Up
     subscription_title: "Оформление подписки",
@@ -107,7 +114,7 @@ const translations = {
     // Home
     wallet: "Wallet",
     days_remaining: "days remaining",
-    purchase_history: "Purchase history",
+    purchase_history: "Purchase history & bonuses",
     total: "total",
     show_more: "Show more",
     show_less: "Show less",
@@ -122,9 +129,16 @@ const translations = {
       "Setup instructions will appear here. This is a temporary message.",
     no_purchases_title: "Purchase history is empty",
     no_purchases_text:
-      "You haven't purchased anything yet. Time to fix that! Choose a suitable plan and get access to all features.",
+      "You have no purchases or bonuses yet.",
     go_to_topup: "Go to plans",
     subscription_inactive: "Subscription is not active. Subscribe to get access to VPN.",
+
+    // НОВЫЕ ПЕРЕВОДЫ ДЛЯ ИСТОРИИ
+    welcome_bonus: "🎁 Welcome bonus",
+    referral_bonus: "👥 Referral bonus",
+    bonus_days_short: "d",
+    purchase: "Purchase",
+    bonus: "Bonus",
 
     // Top Up
     subscription_title: "Subscription Plans",

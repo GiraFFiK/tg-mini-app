@@ -8,6 +8,7 @@ import windows from "../public/microsoft-windows-22-logo-svgrepo-com.svg";
 import {
   getSubscription,
   regenerateActivationCode,
+  getFullHistory,
 } from "../services/api";
 import { useRefresh } from "../../hooks/useRefresh";
 
@@ -21,10 +22,9 @@ export default function Home({ user }: HomeProps) {
   const [copied, setCopied] = useState(false);
   const [activationCode, setActivationCode] = useState("");
   const [subscription, setSubscription] = useState<any>(null);
-  // const [loading, setLoading] = useState(true);
   const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
-  // const [showRefreshTip, setShowRefreshTip] = useState(false);
-  // const [debugInfo, setDebugInfo] = useState<string>("");
+  const [history, setHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Данные пользователя из Telegram
   const tg = window.Telegram?.WebApp;
@@ -40,71 +40,77 @@ export default function Home({ user }: HomeProps) {
   const initials =
     `${firstName?.[0] || ""}${lastName?.[0] || ""}`.toUpperCase() || "U";
 
-  // Функция загрузки данных
-  const fetchData = async () => {
-    if (!telegramId) {
-      // setDebugInfo("❌ Нет telegramId");
-      return;
-    }
-
-    // setDebugInfo("🔍 Запрашиваем данные...");
+  // Функция загрузки данных подписки
+  const fetchSubscriptionData = async () => {
+    if (!telegramId) return;
 
     try {
-      const timestamp = Date.now();
-      console.log(`📡 Запрос к API (${timestamp})...`);
-      
       const subData = await getSubscription(telegramId);
-      console.log("📦 Ответ от API:", subData);
+      console.log("📦 Данные подписки:", subData);
       
       if (subData && typeof subData.isActive === 'boolean') {
-        console.log("✅ Устанавливаем isActive =", subData.isActive);
         setSubscription({
           isActive: subData.isActive,
           daysLeft: subData.daysLeft || 0,
           subscriptionUntil: subData.subscriptionUntil || null
         });
-        // setDebugInfo("✅ Данные обновлены: isActive=" + subData.isActive);
-      } else {
-        console.error("❌ Неверный формат данных:", subData);
-        // setDebugInfo("❌ Неверный формат данных");
       }
     } catch (error) {
-      // setDebugInfo("❌ Ошибка: " + error);
-      console.error("Ошибка fetchData:", error);
+      console.error("Ошибка fetchSubscriptionData:", error);
     }
   };
 
-  // ЕДИНСТВЕННЫЙ useEffect для загрузки данных при монтировании
+  // Функция загрузки истории
+  const fetchHistoryData = async () => {
+    if (!telegramId) return;
+
+    try {
+      const historyData = await getFullHistory(telegramId);
+      console.log("📚 История загружена:", historyData);
+      setHistory(historyData || []);
+    } catch (error) {
+      console.error("Ошибка загрузки истории:", error);
+      setHistory([]);
+    }
+  };
+
+  // Общая функция загрузки всех данных
+  const fetchAllData = async () => {
+    await Promise.all([
+      fetchSubscriptionData(),
+      fetchHistoryData()
+    ]);
+  };
+
+  // Загрузка данных при монтировании
   useEffect(() => {
     const init = async () => {
       console.log("🔄 Компонент Home монтируется, telegramId=", telegramId);
       if (telegramId) {
-        await fetchData();
-        console.log("✅ fetchData выполнен");
+        await fetchAllData();
+        console.log("✅ Все данные загружены");
       } else {
         console.log("❌ telegramId отсутствует");
       }
-      // setLoading(false);
+      setLoading(false);
     };
     init();
-  }, [telegramId]); // Важно: зависимость от telegramId
+  }, [telegramId]);
 
   // Используем хук обновления
   const { refresh } = useRefresh(async () => {
-    await fetchData();
+    await fetchAllData();
   });
 
   // Автоматическое обновление при возвращении на страницу
   useEffect(() => {
     const handleFocus = () => {
       refresh();
-      // setShowRefreshTip(false);
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         refresh();
-        // setShowRefreshTip(false);
       }
     };
 
@@ -126,21 +132,6 @@ export default function Home({ user }: HomeProps) {
     return () => clearInterval(interval);
   }, [refresh]);
 
-  // Обновление после действий
-  const handleGenerateNewCode = async () => {
-    if (!subscription?.isActive) return;
-
-    try {
-      const result = await regenerateActivationCode(telegramId);
-      setActivationCode(result.code);
-      setCopied(false);
-      // setShowRefreshTip(true);
-      // setTimeout(() => setShowRefreshTip(false), 3000);
-    } catch (error) {
-      console.error("Error regenerating code:", error);
-    }
-  };
-
   // Обновление после возвращения с покупки
   useEffect(() => {
     const justPurchased = sessionStorage.getItem("justPurchased");
@@ -150,19 +141,35 @@ export default function Home({ user }: HomeProps) {
     }
   }, []);
 
-  // История покупок
-  const purchaseHistory: {
-    id: number;
-    date: string;
-    plan: string;
-    stars: number;
-    status: string;
-  }[] = [];
+  // Обработчики событий
+  const handleDeviceClick = (deviceId: string) => {
+    if (selectedDevice === deviceId) {
+      setSelectedDevice(null);
+    } else {
+      setSelectedDevice(deviceId);
+    }
+  };
 
-  const visibleHistory = showAllHistory
-    ? purchaseHistory
-    : purchaseHistory.slice(0, 3);
+  const handleCopyCode = () => {
+    if (!subscription?.isActive) return;
+    navigator.clipboard.writeText(activationCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
+  const handleGenerateNewCode = async () => {
+    if (!subscription?.isActive) return;
+
+    try {
+      const result = await regenerateActivationCode(telegramId);
+      setActivationCode(result.code);
+      setCopied(false);
+    } catch (error) {
+      console.error("Error regenerating code:", error);
+    }
+  };
+
+  // Массив устройств
   const devices = [
     {
       id: "ios",
@@ -190,22 +197,9 @@ export default function Home({ user }: HomeProps) {
     },
   ];
 
-  const handleDeviceClick = (deviceId: string) => {
-    if (selectedDevice === deviceId) {
-      setSelectedDevice(null);
-    } else {
-      setSelectedDevice(deviceId);
-    }
-  };
-
-  const handleCopyCode = () => {
-    if (!subscription?.isActive) return;
-    navigator.clipboard.writeText(activationCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-
+  if (loading) {
+    return <div className="loading">Загрузка...</div>;
+  }
 
   const hasSubscription = subscription?.isActive || false;
   const daysLeft = subscription?.daysLeft || 0;
@@ -213,52 +207,36 @@ export default function Home({ user }: HomeProps) {
     ? new Date(subscription.subscriptionUntil).toLocaleDateString("ru-RU")
     : "";
 
+  const visibleHistory = showAllHistory
+    ? history
+    : history.slice(0, 3);
+
+  // Функция для получения названия плана
+  const getPlanName = (plan: string) => {
+    switch(plan) {
+      case 'month': return t('month') || '1 месяц';
+      case '3months': return t('months_3') || '3 месяца';
+      case '6months': return t('months_6') || '6 месяцев';
+      case 'year': return t('year') || '1 год';
+      default: return plan;
+    }
+  };
+
+  // Функция для получения описания типа записи
+  const getItemType = (item: any) => {
+    if (item.type === 'purchase') {
+      return getPlanName(item.plan);
+    } else if (item.type === 'welcome_bonus') {
+      return '🎁 Бонус за первый вход';
+    } else if (item.type === 'referral_bonus') {
+      return '👥 Реферальный бонус';
+    }
+    return '';
+  };
+
   return (
     <div className="home">
       <div className="container">
-        {/* Индикатор обновления */}
-        {/* {refreshing && (
-          <div className="refresh-indicator">
-            <div className="refresh-spinner"></div>
-            <span>Обновление...</span>
-          </div>
-        )}
-        {lastUpdated && (
-          <span className="last-updated">
-            Обновлено: {lastUpdated.toLocaleTimeString()}
-          </span>
-        )} */}
-
-        {/* Подсказка об обновлении */}
-        {/* {showRefreshTip && (
-          <div className="refresh-tip" onClick={refresh}>
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                d="M23 4v6h-6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M1 20v-6h6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span>Нажмите для обновления</span>
-          </div>
-        )} */}
         
         {/* Карточка подписки с профилем */}
         <div className="subscription-card">
@@ -268,38 +246,6 @@ export default function Home({ user }: HomeProps) {
               {t("subscription")}
             </span>
             <div>
-              {/* Кнопка ручного обновления */}
-              {/* <button
-                className={`refresh-button ${refreshing ? "refreshing" : ""}`}
-                onClick={refresh}
-                disabled={refreshing}
-                title="Обновить данные"
-              >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path
-                    d="M23 4v6h-6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M1 20v-6h6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button> */}
               <span
                 className={`subscription-card__badge ${!hasSubscription ? "subscription-card__badge--inactive" : ""}`}
               >
@@ -528,45 +474,63 @@ export default function Home({ user }: HomeProps) {
           </div>
         </div>
 
-        {/* История покупок */}
+        {/* История покупок и бонусов */}
         <div className="history-section">
           <div className="history-section__header">
             <h2 className="history-section__title">
-              {t("purchase_history") || "История покупок"}
+              {t("purchase_history") || "История покупок и бонусов"}
             </h2>
-            {purchaseHistory.length > 0 && (
+            {history.length > 0 && (
               <span className="history-section__count">
-                {purchaseHistory.length} {t("total") || "всего"}
+                {history.length} {t("total") || "всего"}
               </span>
             )}
           </div>
 
-          {purchaseHistory.length > 0 ? (
+          {history.length > 0 ? (
             <>
               <div className="history-list">
-                {visibleHistory.map((purchase) => (
-                  <div key={purchase.id} className="history-item">
+                {visibleHistory.map((item: any) => (
+                  <div key={item.id} className="history-item">
                     <div className="history-item__left">
-                      <div className="history-item__date">{purchase.date}</div>
-                      <div className="history-item__plan">{purchase.plan}</div>
+                      <div className="history-item__date">{item.date}</div>
+                      <div className="history-item__plan">
+                        {getItemType(item)}
+                      </div>
+                      {item.description && (
+                        <div className="history-item__description">
+                          {item.description}
+                        </div>
+                      )}
                     </div>
                     <div className="history-item__right">
-                      <div className="history-item__stars">
-                        <span className="history-item__stars-number">
-                          {purchase.stars}
-                        </span>
-                        <img
-                          src={starsIcon}
-                          alt="⭐"
-                          className="history-item__stars-icon"
-                          width="16"
-                          height="16"
-                        />
-                      </div>
+                      {item.type === 'purchase' ? (
+                        <div className="history-item__stars">
+                          <span className="history-item__stars-number">
+                            {item.stars}
+                          </span>
+                          <img
+                            src={starsIcon}
+                            alt="⭐"
+                            className="history-item__stars-icon"
+                            width="16"
+                            height="16"
+                          />
+                        </div>
+                      ) : (
+                        <div className="history-item__bonus">
+                          <span className="history-item__bonus-number">
+                            +{item.days}
+                          </span>
+                          <span className="history-item__bonus-days">
+                            {t("days") || "дн"}
+                          </span>
+                        </div>
+                      )}
                       <div
-                        className={`history-item__status history-item__status--${purchase.status}`}
+                        className={`history-item__status history-item__status--${item.status}`}
                       >
-                        {purchase.status === "active"
+                        {item.status === "active"
                           ? t("active") || "Активен"
                           : t("expired") || "Истек"}
                       </div>
@@ -575,7 +539,7 @@ export default function Home({ user }: HomeProps) {
                 ))}
               </div>
 
-              {purchaseHistory.length > 3 && (
+              {history.length > 3 && (
                 <button
                   className="history-section__show-more"
                   onClick={() => setShowAllHistory(!showAllHistory)}
@@ -613,7 +577,7 @@ export default function Home({ user }: HomeProps) {
                 {t("no_purchases_title") || "История покупок пуста"}
               </p>
               <p className="history-empty__text">
-                {t("no_purchases_text") || "Вы еще ничего не купили."}
+                {t("no_purchases_text") || "У вас пока нет покупок или бонусов."}
               </p>
             </div>
           )}
@@ -622,5 +586,3 @@ export default function Home({ user }: HomeProps) {
     </div>
   );
 }
-
-//test

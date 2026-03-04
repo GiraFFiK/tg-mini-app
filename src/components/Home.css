@@ -1075,3 +1075,39 @@
 .light-theme .subscription-card__inactive-text {
   color: #4a4b5e;
 }
+
+/* Добавьте в конец файла */
+
+.history-item__description {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.history-item__bonus {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.history-item__bonus-number {
+  font-size: 16px;
+  font-weight: 700;
+  color: #43d4ff;
+}
+
+.history-item__bonus-days {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+  .history-item__description {
+    font-size: 11px;
+  }
+  
+  .history-item__bonus-number {
+    font-size: 14px;
+  }
+}
