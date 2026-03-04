@@ -7,6 +7,7 @@ import android from "../public/android-svgrepo-com.svg";
 import windows from "../public/microsoft-windows-22-logo-svgrepo-com.svg";
 import {
   getSubscription,
+  getActivationCode, // 👈 ДОБАВИТЬ ЭТОТ ИМПОРТ
   regenerateActivationCode,
   getFullHistory,
 } from "../services/api";
@@ -60,6 +61,24 @@ export default function Home({ user }: HomeProps) {
     }
   };
 
+  // 👇 НОВАЯ ФУНКЦИЯ для загрузки кода активации
+  const fetchActivationCodeData = async () => {
+    if (!telegramId) return;
+
+    try {
+      const codeData = await getActivationCode(telegramId);
+      console.log("🔑 Данные кода активации:", codeData);
+      
+      if (codeData.hasSubscription && codeData.code) {
+        setActivationCode(codeData.code);
+      } else {
+        setActivationCode(""); // Очищаем код, если подписка неактивна
+      }
+    } catch (error) {
+      console.error("Ошибка fetchActivationCodeData:", error);
+    }
+  };
+
   // Функция загрузки истории
   const fetchHistoryData = async () => {
     if (!telegramId) return;
@@ -78,6 +97,7 @@ export default function Home({ user }: HomeProps) {
   const fetchAllData = async () => {
     await Promise.all([
       fetchSubscriptionData(),
+      fetchActivationCodeData(), // 👈 ДОБАВЛЕНО
       fetchHistoryData()
     ]);
   };
