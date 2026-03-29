@@ -331,8 +331,6 @@ export default function Home({ user }: HomeProps) {
             </div>
           )}
 
-          {/* Декоративный элемент */}
-          <div className="subscription-card__decoration"></div>
         </div>
 
         {/* Раздел с кодом активации */}

@@ -2,7 +2,7 @@
 .home {
   min-height: calc(100vh - 90px);
   padding: 24px 0;
-  font-family: Bitter;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .container {

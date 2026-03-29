@@ -2,6 +2,7 @@
 .referral-page {
     min-height: calc(100vh - 90px);
     padding: 32px 0;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .container {
