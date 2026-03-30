@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLanguage } from "./LanguageContext";
 import starsIcon from "../public/6514f1e6-dab4-4d49-806a-3ff22d7793e5.webp";
 import "./Topup.css";
@@ -18,7 +18,7 @@ export default function Topup({ user }: TopupProps) {
 
   const { refresh } = useRefresh(async () => {});
 
-  useState(() => {
+  useEffect(() => {
     const handleFocus = () => {
       refresh();
     };
@@ -30,7 +30,7 @@ export default function Topup({ user }: TopupProps) {
     {
       id: "month",
       name: t("month"),
-      stars: 1,
+      stars: 10,
       discount: 0,
       active: true,
       popular: false,
@@ -39,7 +39,7 @@ export default function Topup({ user }: TopupProps) {
     {
       id: "3months",
       name: t("months_3"),
-      stars: 3,
+      stars: 15,
       discount: 13,
       active: true,
       popular: true,
