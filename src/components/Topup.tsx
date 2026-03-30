@@ -84,31 +84,30 @@ export default function Topup({ user }: TopupProps) {
         return;
       }
 
-      // Уникальный ID для этого платежа (можно использовать Date.now())
-      const startParameter = `sub_${selectedPlan}_${telegramId}_${Date.now()}`;
-
-      console.log("📤 Открываем инвойс:", {
-        title: selected.name,
-        stars: selected.stars,
-        userId: telegramId,
-        plan: selectedPlan,
-        startParameter: startParameter,
-      });
-
-      tg.openInvoice({
-        title: selected.name,
-        description: `Подписка AuraVPN на ${selected.days} дней`,
-        // photo_url не обязателен, убираем его
-        payload: JSON.stringify({
+      // 1. Создаем инвойс через бэкенд
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+      const response = await fetch(`${API_URL}/invoice/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           userId: telegramId,
           plan: selectedPlan,
           stars: selected.stars,
         }),
-        provider_token: "",
-        currency: "XTR",
-        prices: [{ label: selected.name, amount: selected.stars }],
-        start_parameter: startParameter, // 👈 добавляем start_parameter
       });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error("Failed to create invoice");
+      }
+
+      console.log("📤 Инвойс создан, ссылка:", data.link);
+
+      // 2. Открываем инвойс по ссылке
+      tg.openInvoice(data.link);
 
     } catch (error) {
       console.error("Payment error:", error);
