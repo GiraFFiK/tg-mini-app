@@ -97,7 +97,7 @@ export default function Topup({ user }: TopupProps) {
       tg.openInvoice({
         title: selected.name,
         description: `Подписка AuraVPN на ${selected.days} дней`,
-        photo_url: "https://your-domain.com/icon.png", // Замените на вашу иконку
+        photo_url: "../public/6514f1e6-dab4-4d49-806a-3ff22d7793e5.webp", // Замените на вашу иконку
         payload: JSON.stringify({
           userId: telegramId,
           plan: selectedPlan,
