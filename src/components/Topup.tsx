@@ -84,22 +84,21 @@ export default function Topup({ user }: TopupProps) {
         return;
       }
 
-      // Создаем data URL из иконки (временное решение)
-      // Или используем публичный URL, если иконка задеплоена
-      const photoUrl = "https://emojicdn.elk.sh/⭐?style=twitter"; // Временная заглушка
+      // Уникальный ID для этого платежа (можно использовать Date.now())
+      const startParameter = `sub_${selectedPlan}_${telegramId}_${Date.now()}`;
 
       console.log("📤 Открываем инвойс:", {
         title: selected.name,
         stars: selected.stars,
         userId: telegramId,
         plan: selectedPlan,
-        photoUrl: photoUrl,
+        startParameter: startParameter,
       });
 
       tg.openInvoice({
         title: selected.name,
         description: `Подписка AuraVPN на ${selected.days} дней`,
-        photo_url: photoUrl, // 👈 ОБЯЗАТЕЛЬНО нужно указать URL картинки
+        // photo_url не обязателен, убираем его
         payload: JSON.stringify({
           userId: telegramId,
           plan: selectedPlan,
@@ -108,7 +107,9 @@ export default function Topup({ user }: TopupProps) {
         provider_token: "",
         currency: "XTR",
         prices: [{ label: selected.name, amount: selected.stars }],
+        start_parameter: startParameter, // 👈 добавляем start_parameter
       });
+
     } catch (error) {
       console.error("Payment error:", error);
       setShowError(true);
