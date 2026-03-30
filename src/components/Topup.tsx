@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLanguage } from "./LanguageContext";
 import starsIcon from "../public/6514f1e6-dab4-4d49-806a-3ff22d7793e5.webp";
 import "./Topup.css";
-import { purchaseSubscription, getStarsBalance } from "../services/api";
 import { useRefresh } from "../../hooks/useRefresh";
 
 interface TopupProps {
@@ -12,53 +11,32 @@ interface TopupProps {
 export default function Topup({ user }: TopupProps) {
   const { t } = useLanguage();
   const [selectedPlan, setSelectedPlan] = useState<string>("month");
-  const [starsBalance, setStarsBalance] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [showInsufficientError, setShowInsufficientError] =
-    useState<boolean>(false);
   const [processing, setProcessing] = useState<boolean>(false);
+  const [showError, setShowError] = useState<boolean>(false);
 
   const telegramId = user?.telegramId;
 
-  // Функция получения баланса звезд
-  const fetchStarsBalance = async () => {
-    if (!telegramId) return;
-    
-    try {
-      setIsLoading(true);
-      const data = await getStarsBalance(telegramId);
-      setStarsBalance(data.balance);
-      console.log("💰 Текущий баланс звезд:", data.balance);
-    } catch (error) {
-      console.error("Ошибка получения баланса:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const { refresh } = useRefresh(fetchStarsBalance);
-
-  // Загрузка данных
-  useEffect(() => {
-    fetchStarsBalance();
-  }, [telegramId]);
+  // Обновление при фокусе (не нужно для баланса, но оставим для обновления UI)
+  const { refresh } = useRefresh(async () => {
+    // Ничего не делаем, просто обновляем UI при необходимости
+  });
 
   // Автообновление при фокусе
-  useEffect(() => {
+  useState(() => {
     const handleFocus = () => {
       refresh();
     };
 
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
-  }, [refresh]);
+  });
 
   const plans = [
     {
       id: "month",
       name: t("month"),
-      price: 50,
-      stars: 50,
+      price: 1,
+      stars: 1,
       discount: 0,
       active: true,
       popular: false,
@@ -67,8 +45,8 @@ export default function Topup({ user }: TopupProps) {
     {
       id: "3months",
       name: t("months_3"),
-      price: 130,
-      stars: 130,
+      price: 3,
+      stars: 3,
       discount: 13,
       active: true,
       popular: true,
@@ -104,42 +82,43 @@ export default function Topup({ user }: TopupProps) {
     const selected = plans.find((p) => p.id === selectedPlan);
     if (!selected?.active || !telegramId) return;
 
-    // Проверяем, хватает ли звезд
-    if (starsBalance >= selected.stars) {
-      setProcessing(true);
-      try {
-        // 1. Покупаем подписку (бэкенд обновит дату и создаст код)
-        const result = await purchaseSubscription(
-          telegramId,
-          selectedPlan,
-          selected.stars,
-        );
+    setProcessing(true);
+    setShowError(false);
 
-        if (result.success) {
-          // 2. Обновляем баланс (списание произошло на бэкенде)
-          await fetchStarsBalance();
-          
-          alert(`✅ Подписка оформлена! Добавлено ${result.daysLeft} дней.`);
-          setShowInsufficientError(false);
-          
-          // 3. Помечаем, что была покупка для обновления на Home
-          sessionStorage.setItem("justPurchased", "true");
-        }
-      } catch (error) {
-        console.error("Purchase error:", error);
-        alert("❌ Ошибка при оформлении подписки");
-      } finally {
-        setProcessing(false);
+    try {
+      const tg = window.Telegram?.WebApp;
+
+      if (!tg) {
+        alert("❌ Не удалось подключиться к Telegram");
+        return;
       }
-    } else {
-      setShowInsufficientError(true);
-      setTimeout(() => setShowInsufficientError(false), 5000);
+
+      // Открываем инвойс для оплаты звездами
+      tg.openInvoice({
+        title: selected.name,
+        description: `Подписка AuraVPN на ${selected.days} дней`,
+        photo_url: "https://your-domain.com/icon.png", // Замените на вашу иконку
+        payload: JSON.stringify({
+          userId: telegramId,
+          plan: selectedPlan,
+          stars: selected.stars,
+        }),
+        provider_token: "", // Для звезд оставляем пустым
+        currency: "XTR", // XTR - код для Telegram Stars
+        prices: [{ label: selected.name, amount: selected.stars }],
+      });
+
+      // Telegram сам обработает оплату и вернет результат
+    } catch (error) {
+      console.error("Payment error:", error);
+      setShowError(true);
+      setTimeout(() => setShowError(false), 5000);
+    } finally {
+      setProcessing(false);
     }
   };
 
   const selectedPlanData = plans.find((p) => p.id === selectedPlan);
-  const hasInsufficientBalance =
-    selectedPlanData?.active && starsBalance < (selectedPlanData?.stars || 0);
 
   return (
     <div className="topup-page">
@@ -150,33 +129,23 @@ export default function Topup({ user }: TopupProps) {
           <p className="topup__subtitle">{t("subscription_subtitle")}</p>
         </div>
 
-        {/* Баланс звезд */}
-        <div className="stars-balance">
-          <div className="stars-balance__info">
-            <span className="stars-balance__label">
-              {t("stars_balance") || "Баланс звезд"}
-            </span>
-            {isLoading ? (
-              <div className="stars-balance__skeleton"></div>
-            ) : (
-              <div className="stars-balance__value">
-                <span
-                  className={`stars-balance__number ${hasInsufficientBalance ? "stars-balance__number--warning" : ""}`}
-                >
-                  {starsBalance}
-                </span>
-                <img
-                  src={starsIcon}
-                  alt="⭐"
-                  className="stars-balance__icon"
-                  width="32"
-                  height="32"
-                />
-              </div>
-            )}
+        {/* Блок информации о звездах */}
+        <div className="stars-info">
+          <div className="stars-info__content">
+            <div className="stars-info__icon">
+              <img src={starsIcon} alt="⭐" width="40" height="40" />
+            </div>
+            <div className="stars-info__text">
+              <h3 className="stars-info__title">Оплата Telegram Stars</h3>
+              <p className="stars-info__description">
+                Для оформления подписки используются Telegram Stars. Если у вас
+                недостаточно звезд, вы можете пополнить баланс нажав на кнопку
+                ниже.
+              </p>
+            </div>
           </div>
-          <button className="stars-balance__button" onClick={handleTopUp}>
-            <span>{t("top_up") || "Пополнить"}</span>
+          <button className="stars-info__button" onClick={handleTopUp}>
+            <span>{t("top_up") || "Пополнить Stars"}</span>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path
                 d="M6 3L11 8L6 13"
@@ -198,12 +167,11 @@ export default function Topup({ user }: TopupProps) {
                 ${selectedPlan === plan.id ? "plan-card--active" : ""} 
                 ${plan.popular ? "plan-card--popular" : ""}
                 ${!plan.active ? "plan-card--inactive" : ""}
-                ${selectedPlan === plan.id && hasInsufficientBalance && showInsufficientError ? "plan-card--insufficient" : ""}
               `}
               onClick={() => {
                 if (plan.active) {
                   setSelectedPlan(plan.id);
-                  setShowInsufficientError(false);
+                  setShowError(false);
                 }
               }}
             >
@@ -297,9 +265,9 @@ export default function Topup({ user }: TopupProps) {
         {selectedPlanData?.active && (
           <div className="topup__action">
             <button
-              className={`topup__button ${showInsufficientError ? "topup__button--error" : ""}`}
+              className={`topup__button ${showError ? "topup__button--error" : ""}`}
               onClick={handleSubscribe}
-              disabled={processing || isLoading}
+              disabled={processing}
             >
               <span>{processing ? "Обработка..." : t("subscribe")}</span>
               <span className="topup__button-price">
@@ -314,14 +282,11 @@ export default function Topup({ user }: TopupProps) {
               </span>
             </button>
 
-            {showInsufficientError && (
+            {showError && (
               <div className="topup__error">
                 <span className="topup__error-icon">⚠️</span>
                 <p className="topup__error-text">
-                  {t("insufficient_balance") || "Недостаточно средств."}{" "}
-                  <button className="topup__error-link" onClick={handleTopUp}>
-                    {t("please_top_up") || "Пожалуйста, пополните баланс"}
-                  </button>
+                  Не удалось создать платеж. Попробуйте позже.
                 </p>
               </div>
             )}

@@ -644,3 +644,103 @@
         height: 18px;
     }
 }
+
+/* Добавьте в конец файла Topup.css */
+
+/* Информационный блок о звездах */
+.stars-info {
+    background: linear-gradient(135deg, rgba(109, 93, 252, 0.15), rgba(67, 212, 255, 0.1));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(109, 93, 252, 0.3);
+    transition: all 0.3s ease;
+}
+
+.stars-info:hover {
+    border-color: rgba(157, 106, 245, 0.5);
+    box-shadow: 0 8px 32px rgba(109, 93, 252, 0.1);
+}
+
+.stars-info__content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.stars-info__icon {
+    flex-shrink: 0;
+    animation: starTwinkle 2s ease-in-out infinite;
+}
+
+.stars-info__text {
+    flex: 1;
+}
+
+.stars-info__title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+}
+
+.stars-info__description {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.stars-info__button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    background: linear-gradient(135deg, #6d5dfc, #9f7aea);
+    border: none;
+    border-radius: 16px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.stars-info__button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(109, 93, 252, 0.3);
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+    .stars-info {
+        padding: 16px;
+    }
+
+    .stars-info__content {
+        gap: 12px;
+    }
+
+    .stars-info__icon img {
+        width: 32px;
+        height: 32px;
+    }
+
+    .stars-info__title {
+        font-size: 16px;
+    }
+
+    .stars-info__description {
+        font-size: 13px;
+    }
+
+    .stars-info__button {
+        padding: 10px;
+        font-size: 13px;
+    }
+}
