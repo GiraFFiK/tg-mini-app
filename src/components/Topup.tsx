@@ -16,17 +16,12 @@ export default function Topup({ user }: TopupProps) {
 
   const telegramId = user?.telegramId;
 
-  // Обновление при фокусе (не нужно для баланса, но оставим для обновления UI)
-  const { refresh } = useRefresh(async () => {
-    // Ничего не делаем, просто обновляем UI при необходимости
-  });
+  const { refresh } = useRefresh(async () => {});
 
-  // Автообновление при фокусе
   useState(() => {
     const handleFocus = () => {
       refresh();
     };
-
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
   });
@@ -35,7 +30,6 @@ export default function Topup({ user }: TopupProps) {
     {
       id: "month",
       name: t("month"),
-      price: 1,
       stars: 1,
       discount: 0,
       active: true,
@@ -45,7 +39,6 @@ export default function Topup({ user }: TopupProps) {
     {
       id: "3months",
       name: t("months_3"),
-      price: 3,
       stars: 3,
       discount: 13,
       active: true,
@@ -55,7 +48,6 @@ export default function Topup({ user }: TopupProps) {
     {
       id: "6months",
       name: t("months_6"),
-      price: 280,
       stars: 280,
       discount: 0,
       active: false,
@@ -65,7 +57,6 @@ export default function Topup({ user }: TopupProps) {
     {
       id: "year",
       name: t("year"),
-      price: 550,
       stars: 550,
       discount: 0,
       active: false,
@@ -93,22 +84,29 @@ export default function Topup({ user }: TopupProps) {
         return;
       }
 
-      // Открываем инвойс для оплаты звездами
+      // Важно: photo_url должен быть доступен по HTTPS
+      // const photoUrl = "https://tg-mini-app-chi-seven.vercel.app/stars-icon.webp";
+      
+      console.log("📤 Открываем инвойс:", {
+        title: selected.name,
+        stars: selected.stars,
+        userId: telegramId,
+        plan: selectedPlan
+      });
+
       tg.openInvoice({
         title: selected.name,
         description: `Подписка AuraVPN на ${selected.days} дней`,
-        photo_url: "../public/6514f1e6-dab4-4d49-806a-3ff22d7793e5.webp", // Замените на вашу иконку
         payload: JSON.stringify({
           userId: telegramId,
           plan: selectedPlan,
           stars: selected.stars,
         }),
-        provider_token: "", // Для звезд оставляем пустым
-        currency: "XTR", // XTR - код для Telegram Stars
+        provider_token: "",
+        currency: "XTR",
         prices: [{ label: selected.name, amount: selected.stars }],
       });
 
-      // Telegram сам обработает оплату и вернет результат
     } catch (error) {
       console.error("Payment error:", error);
       setShowError(true);
