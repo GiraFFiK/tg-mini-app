@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLanguage } from "./LanguageContext";
 import starsIcon from "../public/6514f1e6-dab4-4d49-806a-3ff22d7793e5.webp";
 import "./Topup.css";
-import { useRefresh } from "../../hooks/useRefresh";
+
+// Тип для статуса оплаты
+type PaymentStatus = 'paid' | 'failed' | 'cancelled' | 'pending';
 
 interface TopupProps {
   user?: any;
@@ -16,21 +18,11 @@ export default function Topup({ user }: TopupProps) {
 
   const telegramId = user?.telegramId;
 
-  const { refresh } = useRefresh(async () => {});
-
-  useEffect(() => {
-    const handleFocus = () => {
-      refresh();
-    };
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  });
-
   const plans = [
     {
       id: "month",
       name: t("month"),
-      stars: 10,
+      stars: 1,
       discount: 0,
       active: true,
       popular: false,
@@ -39,7 +31,7 @@ export default function Topup({ user }: TopupProps) {
     {
       id: "3months",
       name: t("months_3"),
-      stars: 15,
+      stars: 3,
       discount: 13,
       active: true,
       popular: true,
@@ -84,7 +76,7 @@ export default function Topup({ user }: TopupProps) {
         return;
       }
 
-      // 1. Создаем инвойс через бэкенд
+      // Получаем ссылку на инвойс с бэкенда
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
       const response = await fetch(`${API_URL}/invoice/create`, {
         method: "POST",
@@ -101,13 +93,26 @@ export default function Topup({ user }: TopupProps) {
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error("Failed to create invoice");
+        throw new Error(data.error || "Failed to create invoice");
       }
 
-      console.log("📤 Инвойс создан, ссылка:", data.link);
+      console.log("📤 Открываем инвойс:", data.invoiceLink);
 
-      // 2. Открываем инвойс по ссылке
-      tg.openInvoice(data.link);
+      // Открываем инвойс по ссылке с callback
+      tg.openInvoice(data.invoiceLink, (status: PaymentStatus) => {
+        console.log("Статус оплаты:", status);
+        if (status === "paid") {
+          // Оплата успешна, можно обновить UI
+          sessionStorage.setItem("justPurchased", "true");
+          alert("✅ Оплата прошла успешно! Подписка активирована.");
+          // Обновляем страницу или перезагружаем данные
+          window.location.reload();
+        } else if (status === "failed") {
+          alert("❌ Оплата не прошла. Попробуйте позже.");
+        } else if (status === "cancelled") {
+          console.log("Платеж отменен");
+        }
+      });
 
     } catch (error) {
       console.error("Payment error:", error);
