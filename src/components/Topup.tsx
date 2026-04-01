@@ -3,8 +3,17 @@ import { useLanguage } from "./LanguageContext";
 import starsIcon from "../public/6514f1e6-dab4-4d49-806a-3ff22d7793e5.webp";
 import "./Topup.css";
 
+type PaymentStatus = 'paid' | 'failed' | 'cancelled' | 'pending';
+
 interface TopupProps {
   user?: any;
+}
+
+interface LogMessage {
+  id: number;
+  text: string;
+  type: 'info' | 'success' | 'error' | 'warning';
+  timestamp: string;
 }
 
 export default function Topup({ user }: TopupProps) {
@@ -12,8 +21,25 @@ export default function Topup({ user }: TopupProps) {
   const [selectedPlan, setSelectedPlan] = useState<string>("month");
   const [processing, setProcessing] = useState<boolean>(false);
   const [showError, setShowError] = useState<boolean>(false);
+  const [logs, setLogs] = useState<LogMessage[]>([]);
+  const [showLogs, setShowLogs] = useState<boolean>(true);
 
   const telegramId = user?.telegramId;
+
+  const addLog = (text: string, type: LogMessage['type'] = 'info') => {
+    const newLog: LogMessage = {
+      id: Date.now(),
+      text,
+      type,
+      timestamp: new Date().toLocaleTimeString(),
+    };
+    setLogs(prev => [...prev, newLog]);
+    console.log(`[${type.toUpperCase()}] ${text}`);
+  };
+
+  const clearLogs = () => {
+    setLogs([]);
+  };
 
   const plans = [
     {
@@ -64,11 +90,22 @@ export default function Topup({ user }: TopupProps) {
 
     setProcessing(true);
     setShowError(false);
+    addLog(`🚀 Начало оформления подписки: ${selected.name}`, 'info');
 
     try {
+      const tg = window.Telegram?.WebApp;
+
+      if (!tg) {
+        addLog("❌ Telegram WebApp не доступен", 'error');
+        alert("❌ Не удалось подключиться к Telegram");
+        return;
+      }
+      addLog("✅ Telegram WebApp доступен", 'success');
+
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
-      
-      const response = await fetch(`${API_URL}/invoice/buy`, {
+      addLog(`📡 Запрос к ${API_URL}/invoice/create`, 'info');
+
+      const response = await fetch(`${API_URL}/invoice/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -76,20 +113,49 @@ export default function Topup({ user }: TopupProps) {
         body: JSON.stringify({
           userId: telegramId,
           plan: selectedPlan,
+          stars: selected.stars,
         }),
       });
+
+      addLog(`📥 Ответ сервера: статус ${response.status}`, 'info');
 
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || "Failed to send invoice");
+        addLog(`❌ Ошибка: ${data.error || "Failed to create invoice"}`, 'error');
+        throw new Error(data.error || "Failed to create invoice");
       }
 
-      // Инвойс отправлен в чат с ботом
-      alert("✅ Инвойс отправлен в чат с ботом! Перейдите в диалог с ботом для оплаты.");
+      addLog(`✅ Инвойс создан, ссылка получена`, 'success');
+      addLog(`🔗 Ссылка: ${data.invoiceLink?.slice(0, 60)}...`, 'info');
+
+      if (!data.invoiceLink || !data.invoiceLink.startsWith("https://")) {
+        addLog(`❌ Неверная ссылка: ${data.invoiceLink}`, 'error');
+        throw new Error("Invalid invoice link");
+      }
+
+      addLog(`🔄 Вызов tg.openInvoice()...`, 'info');
       
+      tg.openInvoice(data.invoiceLink, (status: PaymentStatus) => {
+        addLog(`💰 Статус оплаты: ${status}`, status === 'paid' ? 'success' : 'warning');
+        
+        if (status === "paid") {
+          sessionStorage.setItem("justPurchased", "true");
+          addLog(`✅ Оплата прошла успешно! Подписка активирована.`, 'success');
+          alert("✅ Оплата прошла успешно! Подписка активирована.");
+          window.location.reload();
+        } else if (status === "failed") {
+          addLog(`❌ Оплата не прошла.`, 'error');
+          alert("❌ Оплата не прошла. Попробуйте позже.");
+        } else if (status === "cancelled") {
+          addLog(`ℹ️ Платеж отменен пользователем`, 'warning');
+        }
+      });
+      
+      addLog(`✅ openInvoice вызван, ожидание оплаты...`, 'success');
+
     } catch (error: any) {
-      console.error("Payment error:", error);
+      addLog(`❌ Ошибка: ${error.message}`, 'error');
       setShowError(true);
       setTimeout(() => setShowError(false), 5000);
     } finally {
@@ -98,6 +164,15 @@ export default function Topup({ user }: TopupProps) {
   };
 
   const selectedPlanData = plans.find((p) => p.id === selectedPlan);
+
+  const getLogIcon = (type: string) => {
+    switch(type) {
+      case 'success': return '✅';
+      case 'error': return '❌';
+      case 'warning': return '⚠️';
+      default: return '📝';
+    }
+  };
 
   return (
     <div className="topup-page">
@@ -117,8 +192,8 @@ export default function Topup({ user }: TopupProps) {
             <div className="stars-info__text">
               <h3 className="stars-info__title">Оплата Telegram Stars</h3>
               <p className="stars-info__description">
-                После нажатия кнопки "Оформить подписку" инвойс будет отправлен в чат с ботом.
-                Перейдите в диалог с ботом и оплатите подписку Telegram Stars.
+                Для оформления подписки используются Telegram Stars. Если у вас
+                недостаточно звезд, вы можете пополнить баланс нажав на кнопку ниже.
               </p>
             </div>
           </div>
@@ -264,11 +339,48 @@ export default function Topup({ user }: TopupProps) {
               <div className="topup__error">
                 <span className="topup__error-icon">⚠️</span>
                 <p className="topup__error-text">
-                  Не удалось отправить инвойс. Попробуйте позже.
+                  Не удалось создать платеж. Попробуйте позже.
                 </p>
               </div>
             )}
           </div>
+        )}
+
+        {/* Визуальный логгер */}
+        {showLogs && logs.length > 0 && (
+          <div className="debug-logger">
+            <div className="debug-logger__header">
+              <span className="debug-logger__title">📋 Лог событий</span>
+              <button className="debug-logger__clear" onClick={clearLogs}>
+                Очистить
+              </button>
+              <button 
+                className="debug-logger__close" 
+                onClick={() => setShowLogs(false)}
+                style={{ marginLeft: '8px' }}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="debug-logger__content">
+              {logs.map((log) => (
+                <div key={log.id} className={`debug-logger__item debug-logger__item--${log.type}`}>
+                  <span className="debug-logger__time">{log.timestamp}</span>
+                  <span className="debug-logger__icon">{getLogIcon(log.type)}</span>
+                  <span className="debug-logger__text">{log.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {!showLogs && logs.length > 0 && (
+          <button 
+            className="debug-logger__show"
+            onClick={() => setShowLogs(true)}
+          >
+            📋 Показать лог ({logs.length})
+          </button>
         )}
       </div>
     </div>
