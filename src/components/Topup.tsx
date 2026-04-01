@@ -3,9 +3,6 @@ import { useLanguage } from "./LanguageContext";
 import starsIcon from "../public/6514f1e6-dab4-4d49-806a-3ff22d7793e5.webp";
 import "./Topup.css";
 
-// Тип для статуса оплаты
-type PaymentStatus = 'paid' | 'failed' | 'cancelled' | 'pending';
-
 interface TopupProps {
   user?: any;
 }
@@ -69,16 +66,9 @@ export default function Topup({ user }: TopupProps) {
     setShowError(false);
 
     try {
-      const tg = window.Telegram?.WebApp;
-
-      if (!tg) {
-        alert("❌ Не удалось подключиться к Telegram");
-        return;
-      }
-
-      // Получаем ссылку на инвойс с бэкенда
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
-      const response = await fetch(`${API_URL}/invoice/create`, {
+      
+      const response = await fetch(`${API_URL}/invoice/buy`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -86,35 +76,19 @@ export default function Topup({ user }: TopupProps) {
         body: JSON.stringify({
           userId: telegramId,
           plan: selectedPlan,
-          stars: selected.stars,
         }),
       });
 
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || "Failed to create invoice");
+        throw new Error(data.error || "Failed to send invoice");
       }
 
-      console.log("📤 Открываем инвойс:", data.invoiceLink);
-
-      // Открываем инвойс по ссылке с callback
-      tg.openInvoice(data.invoiceLink, (status: PaymentStatus) => {
-        console.log("Статус оплаты:", status);
-        if (status === "paid") {
-          // Оплата успешна, можно обновить UI
-          sessionStorage.setItem("justPurchased", "true");
-          alert("✅ Оплата прошла успешно! Подписка активирована.");
-          // Обновляем страницу или перезагружаем данные
-          window.location.reload();
-        } else if (status === "failed") {
-          alert("❌ Оплата не прошла. Попробуйте позже.");
-        } else if (status === "cancelled") {
-          console.log("Платеж отменен");
-        }
-      });
-
-    } catch (error) {
+      // Инвойс отправлен в чат с ботом
+      alert("✅ Инвойс отправлен в чат с ботом! Перейдите в диалог с ботом для оплаты.");
+      
+    } catch (error: any) {
       console.error("Payment error:", error);
       setShowError(true);
       setTimeout(() => setShowError(false), 5000);
@@ -143,9 +117,8 @@ export default function Topup({ user }: TopupProps) {
             <div className="stars-info__text">
               <h3 className="stars-info__title">Оплата Telegram Stars</h3>
               <p className="stars-info__description">
-                Для оформления подписки используются Telegram Stars. Если у вас
-                недостаточно звезд, вы можете пополнить баланс нажав на кнопку
-                ниже.
+                После нажатия кнопки "Оформить подписку" инвойс будет отправлен в чат с ботом.
+                Перейдите в диалог с ботом и оплатите подписку Telegram Stars.
               </p>
             </div>
           </div>
@@ -291,7 +264,7 @@ export default function Topup({ user }: TopupProps) {
               <div className="topup__error">
                 <span className="topup__error-icon">⚠️</span>
                 <p className="topup__error-text">
-                  Не удалось создать платеж. Попробуйте позже.
+                  Не удалось отправить инвойс. Попробуйте позже.
                 </p>
               </div>
             )}
