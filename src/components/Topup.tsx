@@ -45,7 +45,7 @@ export default function Topup({ user }: TopupProps) {
     {
       id: "month",
       name: t("month"),
-      stars: 5,
+      stars: 1,
       discount: 0,
       active: true,
       popular: false,
@@ -54,7 +54,7 @@ export default function Topup({ user }: TopupProps) {
     {
       id: "3months",
       name: t("months_3"),
-      stars: 10,
+      stars: 3,
       discount: 13,
       active: true,
       popular: true,
