@@ -236,7 +236,7 @@ export default function Home({ user }: HomeProps) {
       {
         number: 4,
         title: "Подключитесь",
-        description: "Нажмите кнопку подключения в приложении и наслаждайтесь безопасным интернетом",
+        description: "Нажмите кнопку подключения в приложении и наслаждайтесь интернетом без ограничений",
       },
     ];
 
@@ -557,13 +557,13 @@ export default function Home({ user }: HomeProps) {
                     ))}
                   </div>
                   
-                  <div className="device-instructions__note">
+                  {/* <div className="device-instructions__note">
                     <span className="device-instructions__note-icon">💡</span>
                     <p className="device-instructions__note-text">
                       После подключения вы сможете без ограничений пользоваться интернетом. 
                       Конфигурация VPN действительна на весь период подписки.
                     </p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             )}
