@@ -3,18 +3,19 @@ import { useLanguage } from "./LanguageContext";
 import "./Referral.css";
 import { getReferralInfo } from "../services/api";
 import { useRefresh } from "../../hooks/useRefresh";
-import LoadingScreen from "./LoadingScreen"; // 👈 ИМПОРТИРУЕМ LoadingScreen
+import LoadingScreen from "./LoadingScreen";
 
 interface ReferralProps {
   user?: any;
+  isMobile?: boolean;
 }
 
-export default function Referral({ user }: ReferralProps) {
+export default function Referral({ user, isMobile = true }: ReferralProps) {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
   const [showAllReferrals, setShowAllReferrals] = useState(false);
   const [referralData, setReferralData] = useState<any>(null);
-  const [loading, setLoading] = useState(true); // 👈 ДОБАВЛЯЕМ СОСТОЯНИЕ ЗАГРУЗКИ
+  const [loading, setLoading] = useState(true);
 
   const telegramId = user?.telegramId;
 
@@ -27,7 +28,7 @@ export default function Referral({ user }: ReferralProps) {
     } catch (error) {
       console.error("Error fetching referral data:", error);
     } finally {
-      setLoading(false); // 👈 ЗАВЕРШАЕМ ЗАГРУЗКУ
+      setLoading(false);
     }
   };
 
@@ -72,7 +73,10 @@ export default function Referral({ user }: ReferralProps) {
     );
   };
 
-  // 👇 ПОКАЗЫВАЕМ ЗАГРУЗКУ, ПОКА ДАННЫЕ НЕ ПОЛУЧЕНЫ
+  const referralStyle = {
+    paddingTop: isMobile ? '100px' : '24px',
+  };
+
   if (loading) {
     return <LoadingScreen message="Загрузка реферальной системы..." />;
   }
@@ -81,7 +85,7 @@ export default function Referral({ user }: ReferralProps) {
   const visibleReferrals = showAllReferrals ? referrals : referrals.slice(0, 4);
 
   return (
-    <div className="referral-page">
+    <div className="referral-page" style={referralStyle}>
       <div className="container">
         
         {/* Заголовок */}

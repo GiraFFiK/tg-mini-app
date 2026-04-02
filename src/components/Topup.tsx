@@ -7,9 +7,10 @@ type PaymentStatus = "paid" | "failed" | "cancelled" | "pending";
 
 interface TopupProps {
   user?: any;
+  isMobile?: boolean;
 }
 
-export default function Topup({ user }: TopupProps) {
+export default function Topup({ user, isMobile = true }: TopupProps) {
   const { t } = useLanguage();
   const [selectedPlan, setSelectedPlan] = useState<string>("month");
   const [processing, setProcessing] = useState<boolean>(false);
@@ -118,9 +119,13 @@ export default function Topup({ user }: TopupProps) {
   };
 
   const selectedPlanData = plans.find((p) => p.id === selectedPlan);
+  
+  const topupStyle = {
+    paddingTop: isMobile ? '100px' : '24px',
+  };
 
   return (
-    <div className="topup-page">
+    <div className="topup-page" style={topupStyle}>
       <div className="container">
         {/* Заголовок */}
         <div className="topup__header">

@@ -3,7 +3,11 @@ import { useLanguage } from "../components/LanguageContext";
 import { useTheme } from "../components/ThemeContext";
 import "./Settings.css";
 
-export default function Settings() {
+interface SettingsProps {
+  isMobile?: boolean;
+}
+
+export default function Settings({ isMobile = true }: SettingsProps) {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const [isSupportHovered, setIsSupportHovered] = useState(false);
@@ -13,8 +17,12 @@ export default function Settings() {
     { id: "en" as const, name: "English", flag: "🇺🇸", native: "English" },
   ];
 
+  const settingsStyle = {
+    paddingTop: isMobile ? '100px' : '24px',
+  };
+
   return (
-    <div className="settings-page">
+    <div className="settings-page" style={settingsStyle}>
       <div className="container">
         {/* Заголовок с иконкой шестеренки */}
         <div className="settings__header">

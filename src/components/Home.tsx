@@ -16,9 +16,10 @@ import LoadingScreen from "./LoadingScreen";
 
 interface HomeProps {
   user?: any;
+  isMobile?: boolean;
 }
 
-export default function Home({ user }: HomeProps) {
+export default function Home({ user, isMobile = true }: HomeProps) {
   const { t } = useLanguage();
   const [showAllHistory, setShowAllHistory] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -271,7 +272,11 @@ export default function Home({ user }: HomeProps) {
     },
   ];
 
-  // 👇 ЗАМЕНЯЕМ обычный текст на красивый компонент загрузки
+  // Динамический padding-top в зависимости от платформы
+  const homeStyle = {
+    paddingTop: isMobile ? '130px' : '24px',
+  };
+
   if (loading) {
     return <LoadingScreen message="Загрузка профиля..." />;
   }
@@ -313,7 +318,7 @@ export default function Home({ user }: HomeProps) {
   const instructions = selectedDevice ? getDeviceInstructions(selectedDevice) : [];
 
   return (
-    <div className="home">
+    <div className="home" style={homeStyle}>
       <div className="container">
         
         {/* Карточка подписки с профилем */}
@@ -556,14 +561,6 @@ export default function Home({ user }: HomeProps) {
                       </div>
                     ))}
                   </div>
-                  
-                  {/* <div className="device-instructions__note">
-                    <span className="device-instructions__note-icon">💡</span>
-                    <p className="device-instructions__note-text">
-                      После подключения вы сможете без ограничений пользоваться интернетом. 
-                      Конфигурация VPN действительна на весь период подписки.
-                    </p>
-                  </div> */}
                 </div>
               </div>
             )}

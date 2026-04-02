@@ -15,6 +15,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<string>("home");
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const initApp = async () => {
@@ -22,25 +23,34 @@ export default function App() {
       if (tg) {
         // Определяем платформу
         const platform = tg.platform || '';
-        const isMobile = platform === 'ios' || platform === 'android' || platform === 'web' || platform === 'weba';
-        const isDesktop = platform === 'tdesktop' || platform === 'macos' || platform === 'windows' || platform === 'webk';
+        const mobilePlatforms = ['ios', 'android', 'web', 'weba'];
+        const isMobileDevice = mobilePlatforms.includes(platform);
+        setIsMobile(isMobileDevice);
         
         console.log("📱 Платформа:", platform);
-        console.log("Мобильное устройство:", isMobile);
-        console.log("Десктоп:", isDesktop);
+        console.log("Мобильное устройство:", isMobileDevice);
+        
+        // Отключаем вертикальные свайпы для сворачивания
+        tg.disableVerticalSwipes();
         
         // Настройка отображения
-        if (isMobile) {
+        if (isMobileDevice) {
           // На телефонах — полноэкранный режим
-          tg.requestFullscreen?.();
-          console.log("📱 Запрошен полноэкранный режим");
-        } else if (isDesktop) {
-          // На десктопе — расширенный вид (fullsize)
-          tg.expand();
-          console.log("💻 Запрошен расширенный режим");
+          try {
+            if (tg.requestFullscreen) {
+              await tg.requestFullscreen();
+              console.log("📱 Полноэкранный режим активирован");
+            } else {
+              tg.expand();
+            }
+          } catch (error) {
+            console.error("Ошибка при запросе fullscreen:", error);
+            tg.expand();
+          }
         } else {
-          // Fallback для неизвестных платформ
+          // На десктопе — расширенный вид
           tg.expand();
+          console.log("💻 Расширенный режим активирован");
         }
         
         tg.ready();
@@ -73,15 +83,15 @@ export default function App() {
   const renderPage = () => {
     switch (currentPage) {
       case "home":
-        return <Home user={user} />;
+        return <Home user={user} isMobile={isMobile} />;
       case "topup":
-        return <Topup user={user} />;
+        return <Topup user={user} isMobile={isMobile} />;
       case "referral":
-        return <Referral user={user} />;
+        return <Referral user={user} isMobile={isMobile} />;
       case "settings":
-        return <Settings />;
+        return <Settings isMobile={isMobile} />;
       default:
-        return <Home user={user} />;
+        return <Home user={user} isMobile={isMobile} />;
     }
   };
 
