@@ -1106,8 +1106,144 @@
   .history-item__description {
     font-size: 11px;
   }
-  
+
   .history-item__bonus-number {
     font-size: 14px;
   }
+}
+
+/* Стили для инструкций */
+.device-instructions__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.instruction-step {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.instruction-step__number {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #6d5dfc, #9f7aea);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.instruction-step__content {
+  flex: 1;
+}
+
+.instruction-step__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.instruction-step__description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.instruction-step__description strong {
+  color: #9f7aea;
+  font-weight: 600;
+}
+
+.device-instructions__link {
+  color: #9f7aea;
+  text-decoration: none;
+  border-bottom: 1px dashed #9f7aea;
+  transition: all 0.2s ease;
+}
+
+.device-instructions__link:hover {
+  color: #6d5dfc;
+  border-bottom-color: #6d5dfc;
+}
+
+.device-instructions__note {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(109, 93, 252, 0.08);
+  border-radius: 16px;
+  border: 1px solid rgba(109, 93, 252, 0.2);
+  margin-top: 16px;
+}
+
+.device-instructions__note-icon {
+  font-size: 24px;
+}
+
+.device-instructions__note-text {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+  flex: 1;
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+  .instruction-step {
+    gap: 12px;
+  }
+
+  .instruction-step__number {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .instruction-step__title {
+    font-size: 15px;
+  }
+
+  .instruction-step__description {
+    font-size: 13px;
+  }
+
+  .device-instructions__note {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .device-instructions__note-icon {
+    font-size: 20px;
+  }
+
+  .device-instructions__note-text {
+    font-size: 12px;
+  }
+}
+
+/* Стили для светлой темы */
+.light-theme .instruction-step__number {
+  background: linear-gradient(135deg, #6d5dfc, #9f7aea);
+}
+
+.light-theme .instruction-step__description strong {
+  color: #6d5dfc;
+}
+
+.light-theme .device-instructions__link {
+  color: #6d5dfc;
+}
+
+.light-theme .device-instructions__note {
+  background: rgba(109, 93, 252, 0.05);
 }

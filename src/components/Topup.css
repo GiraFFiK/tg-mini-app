@@ -1,7 +1,7 @@
 /* Topup.css */
 .topup-page {
     min-height: calc(100vh - 90px);
-    padding: 32px 0;
+    padding-top: 32px;
     font-family: 'Montserrat', sans-serif;
 }
 

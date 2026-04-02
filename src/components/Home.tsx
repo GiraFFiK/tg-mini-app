@@ -12,7 +12,7 @@ import {
   getFullHistory,
 } from "../services/api";
 import { useRefresh } from "../../hooks/useRefresh";
-import LoadingScreen from "./LoadingScreen"; // 👈 ИМПОРТИРУЕМ LoadingScreen
+import LoadingScreen from "./LoadingScreen";
 
 interface HomeProps {
   user?: any;
@@ -190,6 +190,59 @@ export default function Home({ user }: HomeProps) {
     }
   };
 
+  // Получение инструкции и ссылки для устройства
+  const getDeviceInstructions = (deviceId: string) => {
+    const downloadLinks: Record<string, string> = {
+      ios: "https://apps.apple.com/en/app/v2raytun/id6476628951",
+      android: "https://play.google.com/store/apps/details?id=com.v2raytun.android",
+      windows: "https://storage.v2raytun.com/v2RayTun_Setup.exe",
+      macos: "https://apps.apple.com/en/app/v2raytun/id6476628951",
+    };
+
+    const steps = [
+      {
+        number: 1,
+        title: "Скачайте приложение",
+        description: (
+          <>
+            Установите V2RayTun по{" "}
+            <a 
+              href={downloadLinks[deviceId]} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="device-instructions__link"
+            >
+              этой ссылке
+            </a>
+          </>
+        ),
+      },
+      {
+        number: 2,
+        title: "Скопируйте ключ активации",
+        description: "Нажмите на кнопку \"Копировать\" выше, чтобы скопировать конфигурацию VPN",
+      },
+      {
+        number: 3,
+        title: "Вставьте в приложение",
+        description: (
+          <>
+            Откройте V2RayTun → нажмите{" "}
+            <strong>«на кнопку "+" в вверхнем правом углу»</strong> → выберите{" "}
+            <strong>«Из буфера обмена»</strong>
+          </>
+        ),
+      },
+      {
+        number: 4,
+        title: "Подключитесь",
+        description: "Нажмите кнопку подключения в приложении и наслаждайтесь безопасным интернетом",
+      },
+    ];
+
+    return steps;
+  };
+
   // Массив устройств
   const devices = [
     {
@@ -255,6 +308,9 @@ export default function Home({ user }: HomeProps) {
     }
     return '';
   };
+
+  const selectedDeviceData = devices.find(d => d.id === selectedDevice);
+  const instructions = selectedDevice ? getDeviceInstructions(selectedDevice) : [];
 
   return (
     <div className="home">
@@ -330,13 +386,12 @@ export default function Home({ user }: HomeProps) {
               </p>
             </div>
           )}
-
         </div>
 
         {/* Раздел с кодом активации */}
         <div className="activation-section">
           <h2 className="activation-section__title">
-            {t("activation_code") || "Код активации"}
+            {t("activation_code") || "Ключ активации VPN"}
           </h2>
 
           {hasSubscription ? (
@@ -423,7 +478,7 @@ export default function Home({ user }: HomeProps) {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span>{t("replace_code") || "Заменить код"}</span>
+                <span>{t("replace_code") || "Заменить ключ"}</span>
               </button>
             </>
           ) : (
@@ -431,7 +486,7 @@ export default function Home({ user }: HomeProps) {
               <span className="activation-code__empty-icon">🔒</span>
               <p className="activation-code__empty-text">
                 {t("no_subscription_code") ||
-                  "Активируйте подписку, чтобы получить код"}
+                  "Активируйте подписку, чтобы получить ключ"}
               </p>
             </div>
           )}
@@ -444,7 +499,7 @@ export default function Home({ user }: HomeProps) {
           </h2>
           <p className="devices-section__subtitle">
             {t("device_instructions") ||
-              "Выберите устройство для просмотра инструкции по подключению"}
+              "Выберите устройство для подключения VPN"}
           </p>
 
           <div className="devices-grid">
@@ -461,33 +516,54 @@ export default function Home({ user }: HomeProps) {
                 />
                 <span className="device-card__name">{device.name}</span>
                 <span className="device-card__status">
-                  {t("instructions_soon") || "Скоро"}
+                  Инструкция
                 </span>
               </button>
             ))}
           </div>
 
-          {/* Анимированное появление/исчезновение инструкции */}
+          {/* Инструкция для выбранного устройства */}
           <div
             className={`device-instructions-wrapper ${selectedDevice ? "device-instructions-wrapper--visible" : ""}`}
           >
-            {selectedDevice && (
+            {selectedDevice && selectedDeviceData && (
               <div className="device-instructions">
                 <div className="device-instructions__header">
                   <img
-                    src={devices.find((d) => d.id === selectedDevice)?.icon}
-                    alt={devices.find((d) => d.id === selectedDevice)?.name}
+                    src={selectedDeviceData.icon}
+                    alt={selectedDeviceData.name}
                     className="device-instructions__icon"
                   />
                   <h3 className="device-instructions__title">
-                    {devices.find((d) => d.id === selectedDevice)?.name}
+                    {selectedDeviceData.name} — инструкция по подключению
                   </h3>
                 </div>
                 <div className="device-instructions__content">
-                  <p className="device-instructions__placeholder">
-                    {t("instructions_placeholder") ||
-                      "Инструкция по настройке появится здесь. Это временное сообщение."}
-                  </p>
+                  <div className="device-instructions__steps">
+                    {instructions.map((step) => (
+                      <div key={step.number} className="instruction-step">
+                        <div className="instruction-step__number">
+                          {step.number}
+                        </div>
+                        <div className="instruction-step__content">
+                          <div className="instruction-step__title">
+                            {step.title}
+                          </div>
+                          <div className="instruction-step__description">
+                            {step.description}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="device-instructions__note">
+                    <span className="device-instructions__note-icon">💡</span>
+                    <p className="device-instructions__note-text">
+                      После подключения вы сможете без ограничений пользоваться интернетом. 
+                      Конфигурация VPN действительна на весь период подписки.
+                    </p>
+                  </div>
                 </div>
               </div>
             )}

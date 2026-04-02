@@ -3,7 +3,6 @@ import "./index.css";
 import { useState, useEffect } from "react";
 import { LanguageProvider } from "./components/LanguageContext";
 import { ThemeProvider } from "./components/ThemeContext";
-import Header from "./components/Header";
 import Navigation from "./components/Navigation";
 import Home from "./components/Home";
 import Topup from "./components/Topup";
@@ -68,10 +67,8 @@ export default function App() {
     <ThemeProvider>
       <LanguageProvider>
         <div className="wrapper">
-          <Header />
           {loading ? <LoadingScreen  /> : renderPage()}
           <Navigation onPageChange={setCurrentPage} />
-          {/* <LoadingScreen /> */}
         </div>
       </LanguageProvider>
     </ThemeProvider>
