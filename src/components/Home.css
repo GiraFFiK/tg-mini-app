@@ -1,7 +1,8 @@
 /* Home.css */
 .home {
   min-height: calc(100vh - 90px);
-  padding: 24px 0;
+  padding-top: 70px;
+  padding-bottom: 24px;
   font-family: 'Montserrat', sans-serif;
 }
 

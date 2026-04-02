@@ -20,7 +20,7 @@ export default function Navigation({ onPageChange }: NavigationProps) {
     const tg = window.Telegram?.WebApp;
 
     if (tg?.HapticFeedback) {
-      tg.HapticFeedback.selectionChanged(); // идеально для навигации
+      tg.HapticFeedback.impactOccurred("medium");
     }
   };
 
