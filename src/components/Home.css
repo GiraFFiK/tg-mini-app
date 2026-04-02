@@ -52,7 +52,7 @@
   box-shadow: 0 12px 40px var(--shadow-color);
   transition: all 0.3s ease;
   overflow: hidden;
-  margin-top: 30px;
+  margin-top: 60px;
 }
 
 .subscription-card:hover {
