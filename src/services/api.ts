@@ -28,16 +28,16 @@ export const authenticate = async () => {
       const response = await api.post("/auth", {
         initData: tg.initData
       });
-      console.log("вњ… РђСѓС‚РµРЅС‚РёС„РёРєР°С†РёСЏ С‡РµСЂРµР· Telegram:", response.data);
+      console.log("Authenticated via Telegram", response.data);
       return response.data;
     } catch (error) {
-      console.error("вќЊ РћС€РёР±РєР° Р°СѓС‚РµРЅС‚РёС„РёРєР°С†РёРё С‡РµСЂРµР· Telegram:", error);
+      console.error("Telegram authentication failed", error);
     }
   }
 
   const tgUser = tg?.initDataUnsafe?.user;
   if (tgUser) {
-    console.log("рџ“± Р”Р°РЅРЅС‹Рµ РёР· Telegram WebApp:", tgUser);
+    console.log("Using Telegram WebApp user", tgUser);
     return {
       id: tgUser.id,
       telegramId: String(tgUser.id),
@@ -47,7 +47,7 @@ export const authenticate = async () => {
     };
   }
 
-  console.warn("вљ пёЏ Telegram auth data is unavailable");
+  console.warn("Telegram auth data is unavailable");
   return null;
 };
 
@@ -82,27 +82,27 @@ export const regenerateActivationCode = async (telegramId: string) => {
 };
 
 export const getStarsBalance = async (telegramId: string) => {
-  console.log("рџ“¤ Р—Р°РїСЂРѕСЃ Р±Р°Р»Р°РЅСЃР° Р·РІРµР·Рґ РґР»СЏ:", telegramId);
+  console.log("Fetching stars balance for", telegramId);
   const response = await api.get(`/stars/${telegramId}`);
-  console.log("рџ“Ґ РћС‚РІРµС‚ Р±Р°Р»Р°РЅСЃР°:", response.data);
+  console.log("Stars balance response", response.data);
   return response.data;
 };
 
 export const getPurchaseHistory = async (telegramId: string) => {
-  console.log("рџ“¤ Р—Р°РїСЂРѕСЃ РёСЃС‚РѕСЂРёРё РїРѕРєСѓРїРѕРє РґР»СЏ:", telegramId);
+  console.log("Fetching purchase history for", telegramId);
   const response = await api.get(`/purchases/history/${telegramId}`);
-  console.log("рџ“Ґ РћС‚РІРµС‚ РёСЃС‚РѕСЂРёРё:", response.data);
+  console.log("Purchase history response", response.data);
   return response.data;
 };
 
 export const getBonusHistory = async (telegramId: string) => {
-  console.log("рџ“¤ Р—Р°РїСЂРѕСЃ РёСЃС‚РѕСЂРёРё Р±РѕРЅСѓСЃРѕРІ РґР»СЏ:", telegramId);
+  console.log("Fetching bonus history for", telegramId);
   const response = await api.get(`/purchases/bonus/${telegramId}`);
   return response.data;
 };
 
 export const getFullHistory = async (telegramId: string) => {
-  console.log("рџ“¤ Р—Р°РїСЂРѕСЃ РїРѕР»РЅРѕР№ РёСЃС‚РѕСЂРёРё РґР»СЏ:", telegramId);
+  console.log("Fetching full history for", telegramId);
   const response = await api.get(`/purchases/full/${telegramId}`);
   return response.data;
 };

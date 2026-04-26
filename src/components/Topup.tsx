@@ -72,7 +72,7 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
       const tg = window.Telegram?.WebApp;
 
       if (!tg) {
-        alert("❌ Не удалось подключиться к Telegram");
+        alert("Не удалось подключиться к Telegram");
         return;
       }
 
@@ -83,7 +83,7 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
       if (!initData) {
         throw new Error("Missing Telegram initData");
       }
-      
+
       const response = await fetch(`${cleanApiUrl}/invoice/create`, {
         method: "POST",
         headers: {
@@ -108,13 +108,12 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
       tg.openInvoice(data.invoiceLink, (status: PaymentStatus) => {
         if (status === "paid") {
           sessionStorage.setItem("justPurchased", "true");
-          alert("✅ Оплата прошла успешно! Подписка активирована.");
+          alert("Оплата прошла успешно. Подписка активирована.");
           window.location.reload();
         } else if (status === "failed") {
-          alert("❌ Оплата не прошла. Попробуйте позже.");
+          alert("Оплата не прошла. Попробуйте позже.");
         }
       });
-
     } catch (error: any) {
       console.error("Payment error:", error);
       setShowError(true);
@@ -125,32 +124,29 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
   };
 
   const selectedPlanData = plans.find((p) => p.id === selectedPlan);
-  
+
   const topupStyle = {
-    paddingTop: isMobile ? '100px' : '24px',
+    paddingTop: isMobile ? "100px" : "24px",
   };
 
   return (
     <div className="topup-page" style={topupStyle}>
       <div className="container">
-        {/* Заголовок */}
         <div className="topup__header">
           <h1 className="topup__title">{t("subscription_title")}</h1>
           <p className="topup__subtitle">{t("subscription_subtitle")}</p>
         </div>
 
-        {/* Блок информации о звездах */}
         <div className="stars-info">
           <div className="stars-info__content">
             <div className="stars-info__icon">
-              <img src={starsIcon} alt="⭐" width="40" height="40" />
+              <img src={starsIcon} alt="stars" width="40" height="40" />
             </div>
             <div className="stars-info__text">
               <h3 className="stars-info__title">Оплата Telegram Stars</h3>
               <p className="stars-info__description">
                 Для оформления подписки используются Telegram Stars. Если у вас
-                недостаточно звезд, вы можете пополнить баланс нажав на кнопку
-                ниже.
+                недостаточно звезд, вы можете пополнить баланс, нажав на кнопку ниже.
               </p>
             </div>
           </div>
@@ -168,7 +164,6 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
           </button>
         </div>
 
-        {/* Список тарифов */}
         <div className="plans-grid">
           {plans.map((plan) => (
             <div
@@ -207,16 +202,14 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
                     <span>{plan.stars}</span>
                     <img
                       src={starsIcon}
-                      alt="⭐"
+                      alt="stars"
                       className="plan-card__stars-icon"
                       width="28"
                       height="28"
                     />
                   </div>
                   {plan.discount > 0 && plan.active && (
-                    <span className="plan-card__discount">
-                      -{plan.discount}%
-                    </span>
+                    <span className="plan-card__discount">-{plan.discount}%</span>
                   )}
                 </div>
 
@@ -239,12 +232,10 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
 
                     <div className="plan-card__footer">
                       <div className="plan-card__price-per-day">
-                        <span>
-                          {Math.round((plan.stars / plan.days) * 10) / 10}
-                        </span>
+                        <span>{Math.round((plan.stars / plan.days) * 10) / 10}</span>
                         <img
                           src={starsIcon}
-                          alt="⭐"
+                          alt="stars"
                           className="plan-card__price-per-day-icon"
                           width="16"
                           height="16"
@@ -256,7 +247,7 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
                           <span>{t("economy")} 20</span>
                           <img
                             src={starsIcon}
-                            alt="⭐"
+                            alt="stars"
                             className="plan-card__savings-icon"
                             width="16"
                             height="16"
@@ -271,7 +262,6 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
           ))}
         </div>
 
-        {/* Кнопка оформления */}
         {selectedPlanData?.active && (
           <div className="topup__action">
             <button
@@ -284,7 +274,7 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
                 <span>{selectedPlanData.stars}</span>
                 <img
                   src={starsIcon}
-                  alt="⭐"
+                  alt="stars"
                   className="topup__button-price-icon"
                   width="20"
                   height="20"
