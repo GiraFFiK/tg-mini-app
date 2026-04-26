@@ -1,45 +1,43 @@
-import axios from 'axios';
-import type { InternalAxiosRequestConfig } from 'axios';
+import axios from "axios";
+import type { InternalAxiosRequestConfig } from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
 const api = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-// Добавляем initData в каждый запрос
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const tg = (window as any).Telegram?.WebApp;
+
   if (tg?.initData) {
-    config.headers['X-Telegram-Init-Data'] = tg.initData;
+    config.headers["X-Telegram-Init-Data"] = tg.initData;
   }
+
   return config;
 });
 
-// Аутентификация при загрузке приложения
 export const authenticate = async () => {
   const tg = (window as any).Telegram?.WebApp;
-  
-  // Если есть initData от Telegram - используем его
+
   if (tg?.initData) {
     try {
-      const response = await api.post('/auth', { 
-        initData: tg.initData 
+      const response = await api.post("/auth", {
+        initData: tg.initData
       });
-      console.log("✅ Аутентификация через Telegram:", response.data);
+      console.log("вњ… РђСѓС‚РµРЅС‚РёС„РёРєР°С†РёСЏ С‡РµСЂРµР· Telegram:", response.data);
       return response.data;
     } catch (error) {
-      console.error('❌ Ошибка аутентификации через Telegram:', error);
+      console.error("вќЊ РћС€РёР±РєР° Р°СѓС‚РµРЅС‚РёС„РёРєР°С†РёРё С‡РµСЂРµР· Telegram:", error);
     }
   }
 
-  // Пробуем получить данные из tgUser
   const tgUser = tg?.initDataUnsafe?.user;
   if (tgUser) {
-    console.log("📱 Данные из Telegram WebApp:", tgUser);
+    console.log("рџ“± Р”Р°РЅРЅС‹Рµ РёР· Telegram WebApp:", tgUser);
     return {
       id: tgUser.id,
       telegramId: String(tgUser.id),
@@ -49,41 +47,30 @@ export const authenticate = async () => {
     };
   }
 
-  // Если ничего нет - возвращаем тестовые данные с ВАШИМ ID
-  console.warn('⚠️ Используем тестовые данные');
-  return {
-    id: 1,
-    telegramId: "000", // ← ВАШ РЕАЛЬНЫЙ ID
-    username: "h00dr1",
-    firstName: "Am",
-    lastName: "Am"
-  };
+  console.warn("вљ пёЏ Telegram auth data is unavailable");
+  return null;
 };
 
-// Пользователь
 export const getUser = async (telegramId: string) => {
   const response = await api.get(`/users/${telegramId}`);
   return response.data;
 };
 
-// Подписка
 export const getSubscription = async (telegramId: string) => {
   const response = await api.get(`/subscription/${telegramId}`);
   return response.data;
 };
 
-export const purchaseSubscription = async (telegramId: string, plan: string, stars: number) => {
-  const response = await api.post(`/subscription/${telegramId}/purchase`, { plan, stars });
+export const purchaseSubscription = async (telegramId: string, plan: string) => {
+  const response = await api.post(`/subscription/${telegramId}/purchase`, { plan });
   return response.data;
 };
 
-// Рефералы
 export const getReferralInfo = async (telegramId: string) => {
   const response = await api.get(`/referral/${telegramId}`);
   return response.data;
 };
 
-// Код активации
 export const getActivationCode = async (telegramId: string) => {
   const response = await api.get(`/activation/${telegramId}`);
   return response.data;
@@ -94,39 +81,28 @@ export const regenerateActivationCode = async (telegramId: string) => {
   return response.data;
 };
 
-// Баланс звезд
 export const getStarsBalance = async (telegramId: string) => {
-  console.log("📤 Запрос баланса звезд для:", telegramId);
+  console.log("рџ“¤ Р—Р°РїСЂРѕСЃ Р±Р°Р»Р°РЅСЃР° Р·РІРµР·Рґ РґР»СЏ:", telegramId);
   const response = await api.get(`/stars/${telegramId}`);
-  console.log("📥 Ответ баланса:", response.data);
+  console.log("рџ“Ґ РћС‚РІРµС‚ Р±Р°Р»Р°РЅСЃР°:", response.data);
   return response.data;
 };
 
-// Списание звезд (вызывается после успешной покупки)
-export const deductStars = async (telegramId: string, amount: number) => {
-  console.log("📤 Списание звезд:", amount, "для:", telegramId);
-  const response = await api.post(`/stars/${telegramId}/deduct`, { amount });
-  return response.data;
-};
-
-// История покупок
 export const getPurchaseHistory = async (telegramId: string) => {
-  console.log("📤 Запрос истории покупок для:", telegramId);
+  console.log("рџ“¤ Р—Р°РїСЂРѕСЃ РёСЃС‚РѕСЂРёРё РїРѕРєСѓРїРѕРє РґР»СЏ:", telegramId);
   const response = await api.get(`/purchases/history/${telegramId}`);
-  console.log("📥 Ответ истории:", response.data);
+  console.log("рџ“Ґ РћС‚РІРµС‚ РёСЃС‚РѕСЂРёРё:", response.data);
   return response.data;
 };
 
-// История бонусов
 export const getBonusHistory = async (telegramId: string) => {
-  console.log("📤 Запрос истории бонусов для:", telegramId);
+  console.log("рџ“¤ Р—Р°РїСЂРѕСЃ РёСЃС‚РѕСЂРёРё Р±РѕРЅСѓСЃРѕРІ РґР»СЏ:", telegramId);
   const response = await api.get(`/purchases/bonus/${telegramId}`);
   return response.data;
 };
 
-// Полная история (покупки + бонусы)
 export const getFullHistory = async (telegramId: string) => {
-  console.log("📤 Запрос полной истории для:", telegramId);
+  console.log("рџ“¤ Р—Р°РїСЂРѕСЃ РїРѕР»РЅРѕР№ РёСЃС‚РѕСЂРёРё РґР»СЏ:", telegramId);
   const response = await api.get(`/purchases/full/${telegramId}`);
   return response.data;
 };

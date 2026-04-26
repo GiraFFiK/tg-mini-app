@@ -22,7 +22,7 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
     {
       id: "month",
       name: t("month"),
-      stars: 1,
+      stars: 50,
       discount: 0,
       active: true,
       popular: false,
@@ -31,7 +31,7 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
     {
       id: "3months",
       name: t("months_3"),
-      stars: 3,
+      stars: 130,
       discount: 13,
       active: true,
       popular: true,
@@ -78,14 +78,20 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
 
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
       const cleanApiUrl = API_URL.replace(/\/$/, "");
+      const initData = tg.initData;
+
+      if (!initData) {
+        throw new Error("Missing Telegram initData");
+      }
       
       const response = await fetch(`${cleanApiUrl}/invoice/create`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Telegram-Init-Data": initData,
+        },
         body: JSON.stringify({
-          userId: telegramId,
           plan: selectedPlan,
-          stars: selected.stars,
         }),
       });
 
