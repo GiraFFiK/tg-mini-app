@@ -72,7 +72,7 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
       const tg = window.Telegram?.WebApp;
 
       if (!tg) {
-        alert("Не удалось подключиться к Telegram");
+        alert(t("telegram_connect_error"));
         return;
       }
 
@@ -108,10 +108,10 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
       tg.openInvoice(data.invoiceLink, (status: PaymentStatus) => {
         if (status === "paid") {
           sessionStorage.setItem("justPurchased", "true");
-          alert("Оплата прошла успешно. Подписка активирована.");
+          alert(t("payment_success"));
           window.location.reload();
         } else if (status === "failed") {
-          alert("Оплата не прошла. Попробуйте позже.");
+          alert(t("payment_failed"));
         }
       });
     } catch (error: any) {
@@ -143,10 +143,9 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
               <img src={starsIcon} alt="stars" width="40" height="40" />
             </div>
             <div className="stars-info__text">
-              <h3 className="stars-info__title">Оплата Telegram Stars</h3>
+              <h3 className="stars-info__title">{t("stars_payment_title")}</h3>
               <p className="stars-info__description">
-                Для оформления подписки используются Telegram Stars. Если у вас
-                недостаточно звезд, вы можете пополнить баланс, нажав на кнопку ниже.
+                {t("stars_payment_description")}
               </p>
             </div>
           </div>
@@ -269,7 +268,7 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
               onClick={handleSubscribe}
               disabled={processing}
             >
-              <span>{processing ? "Обработка..." : t("subscribe")}</span>
+              <span>{processing ? t("processing") : t("subscribe")}</span>
               <span className="topup__button-price">
                 <span>{selectedPlanData.stars}</span>
                 <img
@@ -286,7 +285,7 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
               <div className="topup__error">
                 <span className="topup__error-icon">⚠️</span>
                 <p className="topup__error-text">
-                  Не удалось создать платеж. Попробуйте позже.
+                  {t("payment_create_error")}
                 </p>
               </div>
             )}

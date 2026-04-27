@@ -3,7 +3,6 @@ import { useLanguage } from "./LanguageContext";
 import "./Referral.css";
 import { getReferralInfo } from "../services/api";
 import { useRefresh } from "../../hooks/useRefresh";
-import LoadingScreen from "./LoadingScreen";
 
 interface ReferralProps {
   user?: any;
@@ -15,7 +14,6 @@ export default function Referral({ user, isMobile = true }: ReferralProps) {
   const [copied, setCopied] = useState(false);
   const [showAllReferrals, setShowAllReferrals] = useState(false);
   const [referralData, setReferralData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
 
   const telegramId = user?.telegramId;
 
@@ -27,8 +25,6 @@ export default function Referral({ user, isMobile = true }: ReferralProps) {
       setReferralData(data);
     } catch (error) {
       console.error("Error fetching referral data:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -76,10 +72,6 @@ export default function Referral({ user, isMobile = true }: ReferralProps) {
   const referralStyle = {
     paddingTop: isMobile ? '100px' : '24px',
   };
-
-  if (loading) {
-    return <LoadingScreen message="Загрузка реферальной системы..." />;
-  }
 
   const referrals = referralData?.invitedList || [];
   const visibleReferrals = showAllReferrals ? referrals : referrals.slice(0, 4);

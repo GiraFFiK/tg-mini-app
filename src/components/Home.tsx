@@ -12,7 +12,6 @@ import {
   getFullHistory,
 } from "../services/api";
 import { useRefresh } from "../../hooks/useRefresh";
-import LoadingScreen from "./LoadingScreen";
 
 interface HomeProps {
   user?: any;
@@ -23,11 +22,11 @@ export default function Home({ user, isMobile = true }: HomeProps) {
   const { t } = useLanguage();
   const [showAllHistory, setShowAllHistory] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
   const [activationCode, setActivationCode] = useState("");
   const [subscription, setSubscription] = useState<any>(null);
   const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
   const [history, setHistory] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // Данные пользователя из Telegram
   const tg = window.Telegram?.WebApp;
@@ -114,7 +113,6 @@ export default function Home({ user, isMobile = true }: HomeProps) {
       } else {
         console.log("❌ telegramId отсутствует");
       }
-      setLoading(false);
     };
     init();
   }, [telegramId]);
@@ -172,20 +170,40 @@ export default function Home({ user, isMobile = true }: HomeProps) {
     }
   };
 
+  const vibrate = () => {
+    const tg = window.Telegram?.WebApp;
+
+    if (tg?.HapticFeedback) {
+      tg.HapticFeedback.impactOccurred("medium");
+      return;
+    }
+
+    navigator.vibrate?.(35);
+  };
+
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    window.setTimeout(() => setToastMessage(""), 2200);
+  };
+
   const handleCopyCode = () => {
     if (!subscription?.isActive) return;
+    vibrate();
     navigator.clipboard.writeText(activationCode);
     setCopied(true);
+    showToast(t("copied_to_clipboard"));
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleGenerateNewCode = async () => {
     if (!subscription?.isActive) return;
+    vibrate();
 
     try {
       const result = await regenerateActivationCode(telegramId);
       setActivationCode(result.code);
       setCopied(false);
+      showToast(t("config_changed"));
     } catch (error) {
       console.error("Error regenerating code:", error);
     }
@@ -203,41 +221,41 @@ export default function Home({ user, isMobile = true }: HomeProps) {
     const steps = [
       {
         number: 1,
-        title: "Скачайте приложение",
+        title: t("instruction_download_title"),
         description: (
           <>
-            Установите V2RayTun по{" "}
+            {t("instruction_download_description_prefix")}{" "}
             <a 
               href={downloadLinks[deviceId]} 
               target="_blank" 
               rel="noopener noreferrer"
               className="device-instructions__link"
             >
-              этой ссылке
+              {t("instruction_download_link")}
             </a>
           </>
         ),
       },
       {
         number: 2,
-        title: "Скопируйте ключ активации",
-        description: "Нажмите на кнопку \"Копировать\" выше, чтобы скопировать конфигурацию VPN",
+        title: t("instruction_copy_config_title"),
+        description: t("instruction_copy_config_description"),
       },
       {
         number: 3,
-        title: "Вставьте в приложение",
+        title: t("instruction_paste_title"),
         description: (
           <>
-            Откройте V2RayTun → нажмите{" "}
-            <strong>«на кнопку "+" в вверхнем правом углу»</strong> → выберите{" "}
-            <strong>«Из буфера обмена»</strong>
+            V2RayTun →{" "}
+            <strong>{t("instruction_paste_plus")}</strong> →{" "}
+            <strong>{t("instruction_paste_clipboard")}</strong>
           </>
         ),
       },
       {
         number: 4,
-        title: "Подключитесь",
-        description: "Нажмите кнопку подключения в приложении и наслаждайтесь интернетом без ограничений",
+        title: t("instruction_connect_title"),
+        description: t("instruction_connect_description"),
       },
     ];
 
@@ -277,10 +295,6 @@ export default function Home({ user, isMobile = true }: HomeProps) {
     paddingTop: isMobile ? '130px' : '24px',
   };
 
-  if (loading) {
-    return <LoadingScreen message="Загрузка профиля..." />;
-  }
-
   const hasSubscription = subscription?.isActive || false;
   const daysLeft = subscription?.daysLeft || 0;
   const expiryDate = subscription?.subscriptionUntil
@@ -307,9 +321,9 @@ export default function Home({ user, isMobile = true }: HomeProps) {
     if (item.type === 'purchase') {
       return getPlanName(item.plan);
     } else if (item.type === 'welcome_bonus') {
-      return '🎁 Бонус за первый вход';
+      return t("welcome_bonus");
     } else if (item.type === 'referral_bonus') {
-      return '👥 Реферальный бонус';
+      return t("referral_bonus");
     }
     return '';
   };
@@ -319,6 +333,25 @@ export default function Home({ user, isMobile = true }: HomeProps) {
 
   return (
     <div className="home" style={homeStyle}>
+      {toastMessage && (
+        <div className="home-toast" role="status" aria-live="polite">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path
+              d="M20 6L9 17L4 12"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span>{toastMessage}</span>
+        </div>
+      )}
       <div className="container">
         
         {/* Карточка подписки с профилем */}
@@ -521,7 +554,7 @@ export default function Home({ user, isMobile = true }: HomeProps) {
                 />
                 <span className="device-card__name">{device.name}</span>
                 <span className="device-card__status">
-                  Инструкция
+                  {t("device_status_instruction")}
                 </span>
               </button>
             ))}
@@ -540,7 +573,7 @@ export default function Home({ user, isMobile = true }: HomeProps) {
                     className="device-instructions__icon"
                   />
                   <h3 className="device-instructions__title">
-                    {selectedDeviceData.name} — инструкция по подключению
+                    {selectedDeviceData.name} — {t("device_instruction_title")}
                   </h3>
                 </div>
                 <div className="device-instructions__content">
