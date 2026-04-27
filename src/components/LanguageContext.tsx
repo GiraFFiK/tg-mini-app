@@ -47,6 +47,43 @@ const translations = {
     instruction_connect_title: "Подключитесь",
     instruction_connect_description:
       "Нажмите кнопку подключения в приложении и наслаждайтесь интернетом без ограничений",
+    instructions: "Инструкции",
+    close: "Закрыть",
+    instructions_subtitle:
+      "Если приложение недоступно в App Store, сначала смените регион. Затем установите клиент и импортируйте конфиг.",
+    region_instruction_button: "Сменить регион App Store",
+    region_instruction_hint: "Для iPhone и iPad, если приложение недоступно",
+    setup_instruction_button: "Установить и запустить VPN",
+    setup_instruction_hint: "Ссылки на приложения и подключение конфига",
+    region_instruction_title: "Смена региона App Store на США",
+    setup_instruction_title: "Установка приложения и запуск VPN",
+    region_step_account_title: "Откройте настройки Apple ID",
+    region_step_account_description:
+      "Откройте App Store, нажмите на аватар профиля, затем на имя аккаунта. При необходимости войдите в Apple ID.",
+    region_step_country_title: "Перейдите в страну или регион",
+    region_step_country_description:
+      "Откройте Country/Region или Страна/регион и выберите Change Country or Region.",
+    region_step_usa_title: "Выберите United States",
+    region_step_usa_description:
+      "В списке стран выберите United States и примите условия App Store.",
+    region_step_address_title: "Заполните платежные данные",
+    region_step_address_description:
+      "В способе оплаты выберите Нет. В поле Адрес (обязательное поле), укажите So, в поле Город (обязательное поле), укажите So, Штат - Нью-Йорк, Индекс - 10025, Номер телефона - 552 525-55-22.",
+    region_step_download_title: "Скачайте приложение",
+    region_step_download_description:
+      "Вернитесь в App Store, найдите V2RayTun и установите приложение. После установки можно открыть инструкцию по запуску VPN.",
+    setup_step_download_title: "Скачайте приложение",
+    setup_step_download_description:
+      "Выберите свою платформу выше и установите V2RayTun. Для iOS и macOS используется App Store, для Android - Google Play, для Windows - установщик.",
+    setup_step_copy_title: "Скопируйте конфиг",
+    setup_step_copy_description:
+      "На вкладке Home нажмите кнопку Копировать рядом с VPN-конфигом.",
+    setup_step_import_title: "Импортируйте конфиг",
+    setup_step_import_description:
+      "Откройте V2RayTun, нажмите + в правом верхнем углу и выберите импорт из буфера обмена.",
+    setup_step_connect_title: "Запустите VPN",
+    setup_step_connect_description:
+      "Выберите добавленный профиль и нажмите кнопку подключения. Если соединение не появилось, замените конфиг и импортируйте его заново.",
     instructions_soon: "Скоро",
     instructions_placeholder:
       "Инструкция по настройке появится здесь. Это временное сообщение.",
@@ -164,6 +201,43 @@ const translations = {
     instruction_connect_title: "Connect",
     instruction_connect_description:
       "Tap the connect button in the app and enjoy unrestricted internet access",
+    instructions: "Instructions",
+    close: "Close",
+    instructions_subtitle:
+      "If the app is unavailable in the App Store, change your region first. Then install the client and import your config.",
+    region_instruction_button: "Change App Store region",
+    region_instruction_hint: "For iPhone and iPad if the app is unavailable",
+    setup_instruction_button: "Install and start VPN",
+    setup_instruction_hint: "App links and config setup",
+    region_instruction_title: "Change App Store region to the United States",
+    setup_instruction_title: "Install the app and start VPN",
+    region_step_account_title: "Open Apple ID settings",
+    region_step_account_description:
+      "Open the App Store, tap your profile avatar, then tap your account name. Sign in to Apple ID if needed.",
+    region_step_country_title: "Open country or region",
+    region_step_country_description:
+      "Open Country/Region and choose Change Country or Region.",
+    region_step_usa_title: "Select United States",
+    region_step_usa_description:
+      "Select United States from the country list and accept the App Store terms.",
+    region_step_address_title: "Fill in payment details",
+    region_step_address_description:
+      "In the payment method, select None. In the Address field (required field), enter So, in the City field (required field), enter So, State - New York, Zip code - 10025, Phone number - 552 525-55-22.",
+    region_step_download_title: "Download the app",
+    region_step_download_description:
+      "Return to the App Store, search for V2RayTun, and install it. After installation, open the VPN setup guide.",
+    setup_step_download_title: "Download the app",
+    setup_step_download_description:
+      "Choose your platform above and install V2RayTun. iOS and macOS use the App Store, Android uses Google Play, and Windows uses the installer.",
+    setup_step_copy_title: "Copy the config",
+    setup_step_copy_description:
+      "On the Home tab, tap Copy next to your VPN config.",
+    setup_step_import_title: "Import the config",
+    setup_step_import_description:
+      "Open V2RayTun, tap + in the top-right corner, and choose import from clipboard.",
+    setup_step_connect_title: "Start VPN",
+    setup_step_connect_description:
+      "Select the added profile and tap the connect button. If the connection does not appear, replace the config and import it again.",
     instructions_soon: "Soon",
     instructions_placeholder:
       "Setup instructions will appear here. This is a temporary message.",

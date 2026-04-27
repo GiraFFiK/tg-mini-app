@@ -25,7 +25,7 @@ export default function Home({ user, isMobile = true }: HomeProps) {
   const [toastMessage, setToastMessage] = useState("");
   const [activationCode, setActivationCode] = useState("");
   const [subscription, setSubscription] = useState<any>(null);
-  const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
+  const [activeInstruction, setActiveInstruction] = useState<"region" | "setup" | null>(null);
   const [history, setHistory] = useState<any[]>([]);
 
   // Данные пользователя из Telegram
@@ -162,14 +162,6 @@ export default function Home({ user, isMobile = true }: HomeProps) {
   }, []);
 
   // Обработчики событий
-  const handleDeviceClick = (deviceId: string) => {
-    if (selectedDevice === deviceId) {
-      setSelectedDevice(null);
-    } else {
-      setSelectedDevice(deviceId);
-    }
-  };
-
   const vibrate = () => {
     const tg = window.Telegram?.WebApp;
 
@@ -209,57 +201,21 @@ export default function Home({ user, isMobile = true }: HomeProps) {
     }
   };
 
+  const openInstruction = (instruction: "region" | "setup") => {
+    vibrate();
+    setActiveInstruction(instruction);
+  };
+
+  const closeInstruction = () => {
+    setActiveInstruction(null);
+  };
+
   // Получение инструкции и ссылки для устройства
-  const getDeviceInstructions = (deviceId: string) => {
-    const downloadLinks: Record<string, string> = {
-      ios: "https://apps.apple.com/en/app/v2raytun/id6476628951",
-      android: "https://play.google.com/store/apps/details?id=com.v2raytun.android",
-      windows: "https://storage.v2raytun.com/v2RayTun_Setup.exe",
-      macos: "https://apps.apple.com/en/app/v2raytun/id6476628951",
-    };
-
-    const steps = [
-      {
-        number: 1,
-        title: t("instruction_download_title"),
-        description: (
-          <>
-            {t("instruction_download_description_prefix")}{" "}
-            <a 
-              href={downloadLinks[deviceId]} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="device-instructions__link"
-            >
-              {t("instruction_download_link")}
-            </a>
-          </>
-        ),
-      },
-      {
-        number: 2,
-        title: t("instruction_copy_config_title"),
-        description: t("instruction_copy_config_description"),
-      },
-      {
-        number: 3,
-        title: t("instruction_paste_title"),
-        description: (
-          <>
-            V2RayTun →{" "}
-            <strong>{t("instruction_paste_plus")}</strong> →{" "}
-            <strong>{t("instruction_paste_clipboard")}</strong>
-          </>
-        ),
-      },
-      {
-        number: 4,
-        title: t("instruction_connect_title"),
-        description: t("instruction_connect_description"),
-      },
-    ];
-
-    return steps;
+  const deviceDownloadLinks: Record<string, string> = {
+    ios: "https://apps.apple.com/en/app/v2raytun/id6476628951",
+    android: "https://play.google.com/store/apps/details?id=com.v2raytun.android",
+    windows: "https://storage.v2raytun.com/v2RayTun_Setup.exe",
+    macos: "https://apps.apple.com/en/app/v2raytun/id6476628951",
   };
 
   // Массив устройств
@@ -287,6 +243,57 @@ export default function Home({ user, isMobile = true }: HomeProps) {
       name: "macOS",
       icon: apple,
       available: true,
+    },
+  ];
+
+  const appStoreRegionSteps = [
+    {
+      number: 1,
+      title: t("region_step_account_title"),
+      description: t("region_step_account_description"),
+    },
+    {
+      number: 2,
+      title: t("region_step_country_title"),
+      description: t("region_step_country_description"),
+    },
+    {
+      number: 3,
+      title: t("region_step_usa_title"),
+      description: t("region_step_usa_description"),
+    },
+    {
+      number: 4,
+      title: t("region_step_address_title"),
+      description: t("region_step_address_description"),
+    },
+    {
+      number: 5,
+      title: t("region_step_download_title"),
+      description: t("region_step_download_description"),
+    },
+  ];
+
+  const setupSteps = [
+    {
+      number: 1,
+      title: t("setup_step_download_title"),
+      description: t("setup_step_download_description"),
+    },
+    {
+      number: 2,
+      title: t("setup_step_copy_title"),
+      description: t("setup_step_copy_description"),
+    },
+    {
+      number: 3,
+      title: t("setup_step_import_title"),
+      description: t("setup_step_import_description"),
+    },
+    {
+      number: 4,
+      title: t("setup_step_connect_title"),
+      description: t("setup_step_connect_description"),
     },
   ];
 
@@ -328,8 +335,8 @@ export default function Home({ user, isMobile = true }: HomeProps) {
     return '';
   };
 
-  const selectedDeviceData = devices.find(d => d.id === selectedDevice);
-  const instructions = selectedDevice ? getDeviceInstructions(selectedDevice) : [];
+  const currentInstructionSteps =
+    activeInstruction === "region" ? appStoreRegionSteps : setupSteps;
 
   return (
     <div className="home" style={homeStyle}>
@@ -350,6 +357,85 @@ export default function Home({ user, isMobile = true }: HomeProps) {
             />
           </svg>
           <span>{toastMessage}</span>
+        </div>
+      )}
+      {activeInstruction && (
+        <div className="instruction-modal" role="dialog" aria-modal="true">
+          <button
+            className="instruction-modal__backdrop"
+            type="button"
+            aria-label={t("close")}
+            onClick={closeInstruction}
+          />
+          <div className="instruction-modal__panel">
+            <div className="instruction-modal__header">
+              <div>
+                <p className="instruction-modal__eyebrow">
+                  {t("instructions")}
+                </p>
+                <h3 className="instruction-modal__title">
+                  {activeInstruction === "region"
+                    ? t("region_instruction_title")
+                    : t("setup_instruction_title")}
+                </h3>
+              </div>
+              <button
+                className="instruction-modal__close"
+                type="button"
+                aria-label={t("close")}
+                onClick={closeInstruction}
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M18 6L6 18" strokeLinecap="round" />
+                  <path d="M6 6L18 18" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="instruction-modal__body">
+              {activeInstruction === "setup" && (
+                <div className="instruction-modal__downloads">
+                  {devices.map((device) => (
+                    <a
+                      key={device.id}
+                      className="instruction-modal__download"
+                      href={deviceDownloadLinks[device.id]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <img src={device.icon} alt="" />
+                      <span>{device.name}</span>
+                    </a>
+                  ))}
+                </div>
+              )}
+
+              <div className="instruction-modal__steps">
+                {currentInstructionSteps.map((step) => (
+                  <div key={step.number} className="instruction-modal-step">
+                    <div className="instruction-modal-step__number">
+                      {step.number}
+                    </div>
+                    <div>
+                      <h4 className="instruction-modal-step__title">
+                        {step.title}
+                      </h4>
+                      <p className="instruction-modal-step__description">
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       )}
       <div className="container">
@@ -531,72 +617,65 @@ export default function Home({ user, isMobile = true }: HomeProps) {
         </div>
 
         {/* Раздел выбора устройства */}
-        <div className="devices-section">
-          <h2 className="devices-section__title">
-            {t("choose_device") || "Выберите устройство"}
+        <div className="instructions-section">
+          <h2 className="instructions-section__title">
+            {t("instructions")}
           </h2>
-          <p className="devices-section__subtitle">
-            {t("device_instructions") ||
-              "Выберите устройство для подключения VPN"}
+          <p className="instructions-section__subtitle">
+            {t("instructions_subtitle")}
           </p>
 
-          <div className="devices-grid">
-            {devices.map((device) => (
-              <button
-                key={device.id}
-                className={`device-card ${selectedDevice === device.id ? "device-card--active" : ""}`}
-                onClick={() => handleDeviceClick(device.id)}
-              >
-                <img
-                  src={device.icon}
-                  alt={device.name}
-                  className="device-card__icon"
-                />
-                <span className="device-card__name">{device.name}</span>
-                <span className="device-card__status">
-                  {t("device_status_instruction")}
-                </span>
-              </button>
-            ))}
-          </div>
+          <div className="instructions-actions">
+            <button
+              className="instructions-action"
+              type="button"
+              onClick={() => openInstruction("region")}
+            >
+              <span className="instructions-action__icon">
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M2 12h20" />
+                  <path d="M12 2a15.3 15.3 0 0 1 0 20" />
+                  <path d="M12 2a15.3 15.3 0 0 0 0 20" />
+                </svg>
+              </span>
+              <span>
+                <strong>{t("region_instruction_button")}</strong>
+                <small>{t("region_instruction_hint")}</small>
+              </span>
+            </button>
 
-          {/* Инструкция для выбранного устройства */}
-          <div
-            className={`device-instructions-wrapper ${selectedDevice ? "device-instructions-wrapper--visible" : ""}`}
-          >
-            {selectedDevice && selectedDeviceData && (
-              <div className="device-instructions">
-                <div className="device-instructions__header">
-                  <img
-                    src={selectedDeviceData.icon}
-                    alt={selectedDeviceData.name}
-                    className="device-instructions__icon"
-                  />
-                  <h3 className="device-instructions__title">
-                    {selectedDeviceData.name} — {t("device_instruction_title")}
-                  </h3>
-                </div>
-                <div className="device-instructions__content">
-                  <div className="device-instructions__steps">
-                    {instructions.map((step) => (
-                      <div key={step.number} className="instruction-step">
-                        <div className="instruction-step__number">
-                          {step.number}
-                        </div>
-                        <div className="instruction-step__content">
-                          <div className="instruction-step__title">
-                            {step.title}
-                          </div>
-                          <div className="instruction-step__description">
-                            {step.description}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
+            <button
+              className="instructions-action"
+              type="button"
+              onClick={() => openInstruction("setup")}
+            >
+              <span className="instructions-action__icon">
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M12 3v12" strokeLinecap="round" />
+                  <path d="M7 10l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M5 21h14" strokeLinecap="round" />
+                </svg>
+              </span>
+              <span>
+                <strong>{t("setup_instruction_button")}</strong>
+                <small>{t("setup_instruction_hint")}</small>
+              </span>
+            </button>
           </div>
         </div>
 

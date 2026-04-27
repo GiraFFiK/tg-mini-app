@@ -735,6 +735,149 @@
   font-weight: 600;
 }
 
+.instruction-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 18px calc(86px + env(safe-area-inset-bottom));
+}
+
+.instruction-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  background: rgba(6, 7, 18, 0.68);
+  border: 0;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+
+.instruction-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 560px);
+  max-height: min(72vh, 640px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: rgba(22, 23, 40, 0.98);
+  border: 1px solid rgba(157, 106, 245, 0.24);
+  border-radius: 22px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.48);
+  animation: instructionModalIn 0.24s ease;
+}
+
+.instruction-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.instruction-modal__eyebrow {
+  margin: 0 0 4px 0;
+  color: #43d4ff;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.instruction-modal__title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 17px;
+  line-height: 1.2;
+}
+
+.instruction-modal__close {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.instruction-modal__body {
+  overflow: auto;
+  padding: 16px 18px 18px;
+}
+
+.instruction-modal__downloads {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.instruction-modal__download {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  color: var(--text-primary);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+}
+
+.instruction-modal__download img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.instruction-modal__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.instruction-modal-step {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+}
+
+.instruction-modal-step__number {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  color: #ffffff;
+  background: linear-gradient(135deg, #6d5dfc, #9f7aea);
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.instruction-modal-step__title {
+  margin: 0 0 4px 0;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.instruction-modal-step__description {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .activation-code__empty {
   display: flex;
   align-items: center;
@@ -755,6 +898,89 @@
   color: var(--text-muted);
   margin: 0;
   line-height: 1.5;
+}
+
+.instructions-section {
+  margin-top: 24px;
+  padding: 24px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: all 0.3s ease;
+}
+
+.instructions-section:hover {
+  border-color: rgba(157, 106, 245, 0.2);
+  box-shadow: 0 8px 32px rgba(109, 93, 252, 0.1);
+}
+
+.instructions-section__title {
+  margin: 0 0 4px 0;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.instructions-section__subtitle {
+  margin: 0 0 18px 0;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.instructions-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.instructions-action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 86px;
+  padding: 14px;
+  color: var(--text-primary);
+  text-align: left;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.instructions-action:hover {
+  background: rgba(109, 93, 252, 0.08);
+  border-color: rgba(157, 106, 245, 0.28);
+  transform: translateY(-2px);
+}
+
+.instructions-action__icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  color: #43d4ff;
+  background: rgba(67, 212, 255, 0.08);
+  border: 1px solid rgba(67, 212, 255, 0.16);
+  border-radius: 14px;
+}
+
+.instructions-action strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.instructions-action small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 /* Раздел выбора устройства */
@@ -895,6 +1121,45 @@
     padding: 14px;
   }
 
+  .instruction-modal {
+    align-items: flex-start;
+    padding: 78px 10px calc(84px + env(safe-area-inset-bottom));
+  }
+
+  .instruction-modal__panel {
+    max-height: calc(100vh - 178px - env(safe-area-inset-bottom));
+    border-radius: 18px;
+  }
+
+  .instruction-modal__title {
+    font-size: 15px;
+  }
+
+  .instruction-modal__header {
+    padding: 14px 14px 12px;
+  }
+
+  .instruction-modal__body {
+    padding: 12px 14px 14px;
+  }
+
+  .instruction-modal-step {
+    padding: 10px;
+  }
+
+  .instruction-modal-step__description {
+    font-size: 11px;
+  }
+
+  .instruction-modal__downloads,
+  .instructions-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .instructions-action {
+    min-height: 76px;
+  }
+
   .devices-grid {
     gap: 8px;
   }
@@ -935,6 +1200,18 @@
   color: #1a1b2e;
   border-color: rgba(109, 93, 252, 0.18);
   box-shadow: 0 16px 40px rgba(109, 93, 252, 0.18);
+}
+
+.light-theme .instruction-modal__panel {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(109, 93, 252, 0.16);
+  box-shadow: 0 24px 70px rgba(109, 93, 252, 0.22);
+}
+
+.light-theme .instruction-modal-step,
+.light-theme .instruction-modal__download,
+.light-theme .instructions-action {
+  background: rgba(0, 0, 0, 0.025);
 }
 
 .light-theme .device-card {
@@ -1295,5 +1572,16 @@
   to {
     opacity: 1;
     transform: translate(-50%, 0);
+  }
+}
+
+@keyframes instructionModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
