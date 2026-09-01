@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLanguage } from "./LanguageContext";
 import "./Referral.css";
 import { getReferralInfo } from "../services/api";
 import { useRefresh } from "../../hooks/useRefresh";
+import type { AppUser, ReferralInfo } from "../types/app";
 
 interface ReferralProps {
-  user?: any;
+  user?: AppUser | null;
   isMobile?: boolean;
 }
 
@@ -13,11 +14,11 @@ export default function Referral({ user, isMobile = true }: ReferralProps) {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
   const [showAllReferrals, setShowAllReferrals] = useState(false);
-  const [referralData, setReferralData] = useState<any>(null);
+  const [referralData, setReferralData] = useState<ReferralInfo | null>(null);
 
   const telegramId = user?.telegramId;
 
-  const fetchReferralData = async () => {
+  const fetchReferralData = useCallback(async () => {
     if (!telegramId) return;
     
     try {
@@ -26,16 +27,14 @@ export default function Referral({ user, isMobile = true }: ReferralProps) {
     } catch (error) {
       console.error("Error fetching referral data:", error);
     }
-  };
+  }, [telegramId]);
 
   const { refresh } = useRefresh(fetchReferralData);
 
   useEffect(() => {
-    const init = async () => {
-      await fetchReferralData();
-    };
-    init();
-  }, [telegramId]);
+    const timer = window.setTimeout(fetchReferralData, 0);
+    return () => window.clearTimeout(timer);
+  }, [fetchReferralData]);
 
   // Автообновление
   useEffect(() => {
@@ -70,7 +69,7 @@ export default function Referral({ user, isMobile = true }: ReferralProps) {
   };
 
   const referralStyle = {
-    paddingTop: isMobile ? '100px' : '24px',
+    paddingTop: isMobile ? 'calc(env(safe-area-inset-top) + 76px)' : '32px',
   };
 
   const referrals = referralData?.invitedList || [];
@@ -227,7 +226,7 @@ export default function Referral({ user, isMobile = true }: ReferralProps) {
           {referrals.length > 0 ? (
             <>
               <div className="referrals-list">
-                {visibleReferrals.map((referral: any) => (
+                {visibleReferrals.map((referral) => (
                   <div key={referral.id} className="referral-item">
                     <div className="referral-item__left">
                       <div className="referral-item__avatar-wrapper">

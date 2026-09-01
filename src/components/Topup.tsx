@@ -2,11 +2,12 @@ import { useState } from "react";
 import { useLanguage } from "./LanguageContext";
 import starsIcon from "../public/6514f1e6-dab4-4d49-806a-3ff22d7793e5.webp";
 import "./Topup.css";
+import type { AppUser } from "../types/app";
 
 type PaymentStatus = "paid" | "failed" | "cancelled" | "pending";
 
 interface TopupProps {
-  user?: any;
+  user?: AppUser | null;
   isMobile?: boolean;
 }
 
@@ -114,7 +115,7 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
           alert(t("payment_failed"));
         }
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Payment error:", error);
       setShowError(true);
       setTimeout(() => setShowError(false), 5000);
@@ -126,7 +127,7 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
   const selectedPlanData = plans.find((p) => p.id === selectedPlan);
 
   const topupStyle = {
-    paddingTop: isMobile ? "100px" : "24px",
+    paddingTop: isMobile ? "calc(env(safe-area-inset-top) + 76px)" : "32px",
   };
 
   return (

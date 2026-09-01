@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useContext, useEffect, type ReactNode } from "react";
 
 type Language = "ru" | "en";
 
@@ -16,6 +16,11 @@ const translations = {
     inactive: "Неактивна",
     days_left: "дней осталось",
     valid_until: "Действует до:",
+    updating: "Обновляем данные",
+    nav_home: "Главная",
+    nav_plans: "Тарифы",
+    nav_referral: "Друзья",
+    nav_settings: "Настройки",
 
     // Home
     wallet: "allet",
@@ -157,8 +162,19 @@ const translations = {
 
     // Settings
     settings: "Настройки",
+    settings_subtitle: "Внешний вид и параметры приложения",
+    appearance: "Оформление",
+    appearance_description: "Выберите комфортный режим интерфейса",
+    theme_dark: "Темная",
+    theme_light: "Светлая",
     language: "Язык",
+    language_description: "Язык интерфейса и подсказок",
     support: "Поддержка",
+    support_description: "Поможем с установкой и подключением",
+    support_soon: "Скоро появится в Telegram",
+    about_app: "О приложении",
+    app_version: "Версия",
+    app_name: "AuraVPN Mini App",
     contact_support: "Поддержка",
     coming_soon: "Скоро",
     notifications: "Уведомления",
@@ -171,6 +187,11 @@ const translations = {
     inactive: "Inactive",
     days_left: "days left",
     valid_until: "Valid until:",
+    updating: "Updating data",
+    nav_home: "Home",
+    nav_plans: "Plans",
+    nav_referral: "Friends",
+    nav_settings: "Settings",
 
     // Home
     wallet: "Wallet",
@@ -310,8 +331,19 @@ const translations = {
 
     // Settings
     settings: "Settings",
+    settings_subtitle: "Appearance and application preferences",
+    appearance: "Appearance",
+    appearance_description: "Choose a comfortable interface mode",
+    theme_dark: "Dark",
+    theme_light: "Light",
     language: "Language",
+    language_description: "Interface and guide language",
     support: "Support",
+    support_description: "Help with installation and connection",
+    support_soon: "Coming soon in Telegram",
+    about_app: "About",
+    app_version: "Version",
+    app_name: "AuraVPN Mini App",
     contact_support: "Contact support",
     coming_soon: "Coming soon",
     notifications: "Notifications",
@@ -326,7 +358,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
   undefined,
 );
 
-export const LanguageProvider = ({ children }: { children: any }) => {
+export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguage] = useState<Language>(() => {
     const savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
     if (savedLanguage === "ru" || savedLanguage === "en") {
@@ -354,6 +386,7 @@ export const LanguageProvider = ({ children }: { children: any }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
   if (context === undefined) {

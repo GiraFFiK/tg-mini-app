@@ -1,5 +1,12 @@
 import axios from "axios";
 import type { InternalAxiosRequestConfig } from "axios";
+import type {
+  ActivationCodeData,
+  AppUser,
+  HistoryItem,
+  ReferralInfo,
+  SubscriptionData,
+} from "../types/app";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
@@ -11,7 +18,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const tg = (window as any).Telegram?.WebApp;
+  const tg = window.Telegram?.WebApp;
 
   if (tg?.initData) {
     config.headers["X-Telegram-Init-Data"] = tg.initData;
@@ -20,12 +27,12 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 
-export const authenticate = async () => {
-  const tg = (window as any).Telegram?.WebApp;
+export const authenticate = async (): Promise<AppUser | null> => {
+  const tg = window.Telegram?.WebApp;
 
   if (tg?.initData) {
     try {
-      const response = await api.post("/auth", {
+      const response = await api.post<AppUser>("/auth", {
         initData: tg.initData
       });
       console.log("Authenticated via Telegram", response.data);
@@ -57,7 +64,7 @@ export const getUser = async (telegramId: string) => {
 };
 
 export const getSubscription = async (telegramId: string) => {
-  const response = await api.get(`/subscription/${telegramId}`);
+  const response = await api.get<SubscriptionData>(`/subscription/${telegramId}`);
   return response.data;
 };
 
@@ -67,17 +74,17 @@ export const purchaseSubscription = async (telegramId: string, plan: string) => 
 };
 
 export const getReferralInfo = async (telegramId: string) => {
-  const response = await api.get(`/referral/${telegramId}`);
+  const response = await api.get<ReferralInfo>(`/referral/${telegramId}`);
   return response.data;
 };
 
 export const getActivationCode = async (telegramId: string) => {
-  const response = await api.get(`/activation/${telegramId}`);
+  const response = await api.get<ActivationCodeData>(`/activation/${telegramId}`);
   return response.data;
 };
 
 export const regenerateActivationCode = async (telegramId: string) => {
-  const response = await api.post(`/activation/${telegramId}/regenerate`);
+  const response = await api.post<{ code: string }>(`/activation/${telegramId}/regenerate`);
   return response.data;
 };
 
@@ -103,7 +110,7 @@ export const getBonusHistory = async (telegramId: string) => {
 
 export const getFullHistory = async (telegramId: string) => {
   console.log("Fetching full history for", telegramId);
-  const response = await api.get(`/purchases/full/${telegramId}`);
+  const response = await api.get<HistoryItem[]>(`/purchases/full/${telegramId}`);
   return response.data;
 };
 

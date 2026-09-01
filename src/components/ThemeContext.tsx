@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useContext, useEffect, type ReactNode } from "react";
 
 type Theme = "dark" | "light";
 
@@ -12,7 +12,7 @@ const THEME_STORAGE_KEY = "app_theme";
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export const ThemeProvider = ({ children }: { children: any }) => {
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   // Инициализация с сохраненной темой или 'dark' по умолчанию
   const [theme, setTheme] = useState<Theme>(() => {
     const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
@@ -51,6 +51,7 @@ export const ThemeProvider = ({ children }: { children: any }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (context === undefined) {

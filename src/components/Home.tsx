@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useLanguage } from "./LanguageContext";
 import starsIcon from "../public/6514f1e6-dab4-4d49-806a-3ff22d7793e5.webp";
 import "./Home.css";
@@ -11,39 +11,83 @@ import {
   regenerateActivationCode,
   getFullHistory,
 } from "../services/api";
-import { useRefresh } from "../../hooks/useRefresh";
+import type { AppUser, HistoryItem, SubscriptionData } from "../types/app";
 
-interface HomeProps {
-  user?: any;
-  isMobile?: boolean;
+type HomeCacheData = {
+  subscription: SubscriptionData | null;
+  activationCode: string;
+  history: HistoryItem[];
+};
+
+const homeMemoryCache = new Map<string, HomeCacheData>();
+
+function getHomeCache(telegramId: string): HomeCacheData | null {
+  if (!telegramId) return null;
+
+  const memoryValue = homeMemoryCache.get(telegramId);
+  if (memoryValue) return memoryValue;
+
+  try {
+    const storedValue = sessionStorage.getItem(`home-data:${telegramId}`);
+    if (!storedValue) return null;
+    const parsedValue = JSON.parse(storedValue) as HomeCacheData;
+    homeMemoryCache.set(telegramId, parsedValue);
+    return parsedValue;
+  } catch {
+    return null;
+  }
 }
 
-export default function Home({ user, isMobile = true }: HomeProps) {
-  const { t } = useLanguage();
-  const [showAllHistory, setShowAllHistory] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [activationCode, setActivationCode] = useState("");
-  const [subscription, setSubscription] = useState<any>(null);
-  const [activeInstruction, setActiveInstruction] = useState<"region" | "setup" | null>(null);
-  const [history, setHistory] = useState<any[]>([]);
+function updateHomeCache(telegramId: string, patch: Partial<HomeCacheData>) {
+  if (!telegramId) return;
 
-  // Данные пользователя из Telegram
+  const currentValue = getHomeCache(telegramId) || {
+    subscription: null,
+    activationCode: "",
+    history: [],
+  };
+  const nextValue = { ...currentValue, ...patch };
+  homeMemoryCache.set(telegramId, nextValue);
+  sessionStorage.setItem(`home-data:${telegramId}`, JSON.stringify(nextValue));
+}
+
+interface HomeProps {
+  user?: AppUser | null;
+  isMobile?: boolean;
+  isActive?: boolean;
+}
+
+export default function Home({ user, isMobile = true, isActive = true }: HomeProps) {
+  const { t, language } = useLanguage();
   const tg = window.Telegram?.WebApp;
   const tgUser = tg?.initDataUnsafe?.user;
-
   const username =
     tgUser?.username || tgUser?.first_name || user?.username || "User";
   const firstName = tgUser?.first_name || user?.firstName || "";
   const lastName = tgUser?.last_name || user?.lastName || "";
   const photoUrl = tgUser?.photo_url;
   const telegramId = user?.telegramId || String(tgUser?.id || "");
+  const initialCache = getHomeCache(telegramId);
+
+  const [showAllHistory, setShowAllHistory] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [activationCode, setActivationCode] = useState(initialCache?.activationCode || "");
+  const [subscription, setSubscription] = useState<SubscriptionData | null>(
+    initialCache?.subscription || null,
+  );
+  const [subscriptionLoaded, setSubscriptionLoaded] = useState(
+    Boolean(initialCache?.subscription),
+  );
+  const [activeInstruction, setActiveInstruction] = useState<"region" | "setup" | null>(null);
+  const [history, setHistory] = useState<HistoryItem[]>(initialCache?.history || []);
+  const refreshingRef = useRef(false);
 
   const initials =
     `${firstName?.[0] || ""}${lastName?.[0] || ""}`.toUpperCase() || "U";
 
   // Функция загрузки данных подписки
-  const fetchSubscriptionData = async () => {
+  const fetchSubscriptionData = useCallback(async () => {
     if (!telegramId) return;
 
     try {
@@ -51,19 +95,22 @@ export default function Home({ user, isMobile = true }: HomeProps) {
       console.log("📦 Данные подписки:", subData);
       
       if (subData && typeof subData.isActive === 'boolean') {
-        setSubscription({
+        const nextSubscription = {
           isActive: subData.isActive,
           daysLeft: subData.daysLeft || 0,
           subscriptionUntil: subData.subscriptionUntil || null
-        });
+        };
+        setSubscription(nextSubscription);
+        setSubscriptionLoaded(true);
+        updateHomeCache(telegramId, { subscription: nextSubscription });
       }
     } catch (error) {
       console.error("Ошибка fetchSubscriptionData:", error);
     }
-  };
+  }, [telegramId]);
 
   // Функция для загрузки кода активации
-  const fetchActivationCodeData = async () => {
+  const fetchActivationCodeData = useCallback(async () => {
     if (!telegramId) return;
 
     try {
@@ -72,65 +119,63 @@ export default function Home({ user, isMobile = true }: HomeProps) {
       
       if (codeData.hasSubscription && codeData.code) {
         setActivationCode(codeData.code);
+        updateHomeCache(telegramId, { activationCode: codeData.code });
       } else {
         setActivationCode("");
+        updateHomeCache(telegramId, { activationCode: "" });
       }
     } catch (error) {
       console.error("Ошибка fetchActivationCodeData:", error);
     }
-  };
+  }, [telegramId]);
 
   // Функция загрузки истории
-  const fetchHistoryData = async () => {
+  const fetchHistoryData = useCallback(async () => {
     if (!telegramId) return;
 
     try {
       const historyData = await getFullHistory(telegramId);
       console.log("📚 История загружена:", historyData);
       setHistory(historyData || []);
+      updateHomeCache(telegramId, { history: historyData || [] });
     } catch (error) {
       console.error("Ошибка загрузки истории:", error);
-      setHistory([]);
     }
-  };
+  }, [telegramId]);
 
   // Общая функция загрузки всех данных
-  const fetchAllData = async () => {
-    await Promise.all([
-      fetchSubscriptionData(),
-      fetchActivationCodeData(),
-      fetchHistoryData()
-    ]);
-  };
+  const fetchAllData = useCallback(async () => {
+    if (!telegramId || refreshingRef.current) return;
+    refreshingRef.current = true;
+    try {
+      await Promise.all([
+        fetchSubscriptionData(),
+        fetchActivationCodeData(),
+        fetchHistoryData()
+      ]);
+    } finally {
+      refreshingRef.current = false;
+    }
+  }, [fetchActivationCodeData, fetchHistoryData, fetchSubscriptionData, telegramId]);
 
   // Загрузка данных при монтировании
   useEffect(() => {
-    const init = async () => {
-      console.log("🔄 Компонент Home монтируется, telegramId=", telegramId);
-      if (telegramId) {
-        await fetchAllData();
-        console.log("✅ Все данные загружены");
-      } else {
-        console.log("❌ telegramId отсутствует");
-      }
-    };
-    init();
-  }, [telegramId]);
+    fetchAllData();
+  }, [fetchAllData]);
 
-  // Используем хук обновления
-  const { refresh } = useRefresh(async () => {
-    await fetchAllData();
-  });
+  useEffect(() => {
+    if (isActive) fetchAllData();
+  }, [isActive, fetchAllData]);
 
   // Автоматическое обновление при возвращении на страницу
   useEffect(() => {
     const handleFocus = () => {
-      refresh();
+      fetchAllData();
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        refresh();
+        fetchAllData();
       }
     };
 
@@ -141,25 +186,25 @@ export default function Home({ user, isMobile = true }: HomeProps) {
       window.removeEventListener("focus", handleFocus);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [refresh]);
+  }, [fetchAllData]);
 
   // Периодическое обновление каждые 30 секунд
   useEffect(() => {
     const interval = setInterval(() => {
-      refresh();
+      fetchAllData();
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [refresh]);
+  }, [fetchAllData]);
 
   // Обновление после возвращения с покупки
   useEffect(() => {
     const justPurchased = sessionStorage.getItem("justPurchased");
     if (justPurchased === "true") {
-      refresh();
+      fetchAllData();
       sessionStorage.removeItem("justPurchased");
     }
-  }, []);
+  }, [fetchAllData]);
 
   // Обработчики событий
   const vibrate = () => {
@@ -194,6 +239,7 @@ export default function Home({ user, isMobile = true }: HomeProps) {
     try {
       const result = await regenerateActivationCode(telegramId);
       setActivationCode(result.code);
+      updateHomeCache(telegramId, { activationCode: result.code });
       setCopied(false);
       showToast(t("config_changed"));
     } catch (error) {
@@ -299,13 +345,13 @@ export default function Home({ user, isMobile = true }: HomeProps) {
 
   // Динамический padding-top в зависимости от платформы
   const homeStyle = {
-    paddingTop: isMobile ? '130px' : '24px',
+    paddingTop: isMobile ? 'calc(env(safe-area-inset-top) + 76px)' : '32px',
   };
 
   const hasSubscription = subscription?.isActive || false;
   const daysLeft = subscription?.daysLeft || 0;
   const expiryDate = subscription?.subscriptionUntil
-    ? new Date(subscription.subscriptionUntil).toLocaleDateString("ru-RU")
+    ? new Date(subscription.subscriptionUntil).toLocaleDateString(language === "ru" ? "ru-RU" : "en-US")
     : "";
 
   const visibleHistory = showAllHistory
@@ -324,7 +370,7 @@ export default function Home({ user, isMobile = true }: HomeProps) {
   };
 
   // Функция для получения описания типа записи
-  const getItemType = (item: any) => {
+  const getItemType = (item: HistoryItem) => {
     if (item.type === 'purchase') {
       return getPlanName(item.plan);
     } else if (item.type === 'welcome_bonus') {
@@ -449,9 +495,13 @@ export default function Home({ user, isMobile = true }: HomeProps) {
             </span>
             <div>
               <span
-                className={`subscription-card__badge ${!hasSubscription ? "subscription-card__badge--inactive" : ""}`}
+                className={`subscription-card__badge ${subscriptionLoaded && !hasSubscription ? "subscription-card__badge--inactive" : ""} ${!subscriptionLoaded ? "subscription-card__badge--loading" : ""}`}
               >
-                {hasSubscription ? t("active") : t("inactive") || "Неактивна"}
+                {!subscriptionLoaded
+                  ? t("updating")
+                  : hasSubscription
+                    ? t("active")
+                    : t("inactive")}
               </span>
             </div>
           </div>
@@ -478,7 +528,13 @@ export default function Home({ user, isMobile = true }: HomeProps) {
           </div>
 
           {/* Дни и прогресс - показываем только если есть подписка */}
-          {hasSubscription ? (
+          {!subscriptionLoaded ? (
+            <div className="subscription-card__loading" aria-label={t("updating")}>
+              <span className="subscription-card__skeleton subscription-card__skeleton--large" />
+              <span className="subscription-card__skeleton" />
+              <span className="subscription-card__skeleton subscription-card__skeleton--short" />
+            </div>
+          ) : hasSubscription ? (
             <div className="subscription-card__content">
               <div className="subscription-card__days">
                 <span className="subscription-card__days-number">
@@ -518,7 +574,12 @@ export default function Home({ user, isMobile = true }: HomeProps) {
             {t("activation_code") || "Ключ активации VPN"}
           </h2>
 
-          {hasSubscription ? (
+          {!subscriptionLoaded ? (
+            <div className="activation-code__loading" aria-label={t("updating")}>
+              <span />
+              <span />
+            </div>
+          ) : hasSubscription ? (
             <>
               <div className="activation-code">
                 <div className="activation-code__wrapper">
@@ -695,7 +756,7 @@ export default function Home({ user, isMobile = true }: HomeProps) {
           {history.length > 0 ? (
             <>
               <div className="history-list">
-                {visibleHistory.map((item: any) => (
+                {visibleHistory.map((item) => (
                   <div key={item.id} className="history-item">
                     <div className="history-item__left">
                       <div className="history-item__date">{item.date}</div>

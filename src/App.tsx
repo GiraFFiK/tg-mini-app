@@ -10,10 +10,12 @@ import Referral from "./components/Referral";
 import Settings from "./components/Settings";
 import LoadingScreen from "./components/LoadingScreen";
 import { authenticate } from "./services/api";
+import type { AppUser } from "./types/app";
+import "./redesign.css";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<string>("home");
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -31,7 +33,7 @@ export default function App() {
         console.log("Мобильное устройство:", isMobileDevice);
         
         // Отключаем вертикальные свайпы для сворачивания
-        tg.disableVerticalSwipes();
+        tg.disableVerticalSwipes?.();
         
         // Настройка отображения
         if (isMobileDevice) {
@@ -53,54 +55,44 @@ export default function App() {
           console.log("💻 Расширенный режим активирован");
         }
         
-        tg.ready();
+        tg.ready?.();
       }
 
-      // Засекаем время начала
-      const startTime = Date.now();
-      
       const userData = await authenticate();
       if (userData) {
         setUser(userData);
         console.log("User authenticated:", userData);
       }
-      
-      // Вычисляем, сколько прошло времени
-      const elapsedTime = Date.now() - startTime;
-      const minLoadTime = 2000; // 2 секунды
-      
-      // Если прошло меньше минимального времени, ждем остаток
-      if (elapsedTime < minLoadTime) {
-        await new Promise(resolve => setTimeout(resolve, minLoadTime - elapsedTime));
-      }
-      
+
       setLoading(false);
     };
 
     initApp();
   }, []);
 
-  const renderPage = () => {
-    switch (currentPage) {
-      case "home":
-        return <Home user={user} isMobile={isMobile} />;
-      case "topup":
-        return <Topup user={user} isMobile={isMobile} />;
-      case "referral":
-        return <Referral user={user} isMobile={isMobile} />;
-      case "settings":
-        return <Settings isMobile={isMobile} />;
-      default:
-        return <Home user={user} isMobile={isMobile} />;
-    }
-  };
-
   return (
     <ThemeProvider>
       <LanguageProvider>
         <div className="wrapper">
-          {loading ? <LoadingScreen /> : renderPage()}
-          <Navigation onPageChange={setCurrentPage} />
+          {loading ? (
+            <LoadingScreen />
+          ) : (
+            <main className="app-pages">
+              <section className={`app-page ${currentPage === "home" ? "app-page--active" : ""}`}>
+                <Home user={user} isMobile={isMobile} isActive={currentPage === "home"} />
+              </section>
+              <section className={`app-page ${currentPage === "topup" ? "app-page--active" : ""}`}>
+                <Topup user={user} isMobile={isMobile} />
+              </section>
+              <section className={`app-page ${currentPage === "referral" ? "app-page--active" : ""}`}>
+                <Referral user={user} isMobile={isMobile} />
+              </section>
+              <section className={`app-page ${currentPage === "settings" ? "app-page--active" : ""}`}>
+                <Settings isMobile={isMobile} />
+              </section>
+            </main>
+          )}
+          <Navigation activePage={currentPage} onPageChange={setCurrentPage} />
         </div>
       </LanguageProvider>
     </ThemeProvider>
