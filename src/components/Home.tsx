@@ -136,8 +136,9 @@ export default function Home({ user, isMobile = true, isActive = true }: HomePro
     try {
       const historyData = await getFullHistory(telegramId);
       console.log("📚 История загружена:", historyData);
-      setHistory(historyData || []);
-      updateHomeCache(telegramId, { history: historyData || [] });
+      const nextHistory = Array.isArray(historyData) ? historyData : [];
+      setHistory(nextHistory);
+      updateHomeCache(telegramId, { history: nextHistory });
     } catch (error) {
       console.error("Ошибка загрузки истории:", error);
     }
@@ -548,7 +549,7 @@ export default function Home({ user, isMobile = true, isActive = true }: HomePro
               <div className="subscription-card__progress">
                 <div
                   className="subscription-card__progress-bar"
-                  style={{ width: `${(daysLeft / 30) * 100}%` }}
+                  style={{ width: `${Math.min((daysLeft / 30) * 100, 100)}%` }}
                 />
               </div>
 

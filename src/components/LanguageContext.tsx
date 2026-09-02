@@ -106,8 +106,8 @@ const translations = {
     bonus: "Бонус",
 
     // Top Up
-    subscription_title: "Оформление подписки",
-    subscription_subtitle: "Выберите пакет и получите доступ к VPN",
+    subscription_title: "Тарифы",
+    subscription_subtitle: "Одна подписка для ваших основных устройств",
     month: "1 месяц",
     months_3: "3 месяца",
     months_6: "6 месяцев",
@@ -116,9 +116,9 @@ const translations = {
     popular: "Популярное",
     economy: "Экономия",
     per_day: "₽/день",
-    subscribe: "Оформить подписку",
+    subscribe: "Подключить",
     terms:
-      "Нажимая кнопку, вы соглашаетесь с условиями подписки. Списание будет произведено сразу. Можно отменить в любой момент.",
+      "Оплата списывается один раз в Telegram Stars. Автоматического продления нет.",
     full_access: "Полное шифрование данных",
     priority_support: "Современные сервера",
     unlimited: "Скорость без ограничений",
@@ -133,6 +133,22 @@ const translations = {
     stars_payment_title: "Оплата Telegram Stars",
     stars_payment_description:
       "Для оформления подписки используются Telegram Stars. Если у вас недостаточно звезд, вы можете пополнить баланс, нажав на кнопку ниже.",
+    one_subscription: "ОДНА ПОДПИСКА",
+    multi_device_title: "До 5 устройств",
+    multi_device_description:
+      "Подключайте телефон, планшет и компьютер к одному конфигу AuraVPN.",
+    all_platforms_feature: "Все платформы",
+    one_config_feature: "Один конфиг",
+    choose_period: "Выберите срок",
+    choose_period_hint: "Все возможности входят в каждый вариант",
+    up_to_five_devices: "До 5 устройств",
+    best_choice: "Выгодный выбор",
+    save_label: "Экономия",
+    flexible_start: "Удобно для начала",
+    per_month_stars: "Stars / месяц",
+    included_title: "Что входит",
+    checkout_title: "Ваш выбор",
+    stars_topup_hint: "Пополнить баланс можно через PremiumBot",
     processing: "Обработка...",
     payment_create_error: "Не удалось создать платеж. Попробуйте позже.",
 
@@ -276,8 +292,8 @@ const translations = {
     bonus: "Bonus",
 
     // Top Up
-    subscription_title: "Subscription Plans",
-    subscription_subtitle: "Choose a plan and get access to all features",
+    subscription_title: "Plans",
+    subscription_subtitle: "One subscription for your essential devices",
     month: "1 month",
     months_3: "3 months",
     months_6: "6 months",
@@ -286,9 +302,9 @@ const translations = {
     popular: "Popular",
     economy: "Save",
     per_day: "₽/day",
-    subscribe: "Subscribe",
+    subscribe: "Connect",
     terms:
-      "By clicking the button, you agree to the subscription terms. Payment will be charged immediately. You can cancel anytime.",
+      "Payment is charged once in Telegram Stars. There is no automatic renewal.",
     full_access: "Full access to all features",
     priority_support: "Priority support",
     unlimited: "Unlimited",
@@ -303,6 +319,22 @@ const translations = {
     stars_payment_title: "Telegram Stars payment",
     stars_payment_description:
       "Telegram Stars are used to purchase subscriptions. If you do not have enough Stars, you can top up your balance with the button below.",
+    one_subscription: "ONE SUBSCRIPTION",
+    multi_device_title: "Up to 5 devices",
+    multi_device_description:
+      "Connect your phone, tablet, and computer with one AuraVPN config.",
+    all_platforms_feature: "Every platform",
+    one_config_feature: "One config",
+    choose_period: "Choose a period",
+    choose_period_hint: "Every option includes all features",
+    up_to_five_devices: "Up to 5 devices",
+    best_choice: "Best choice",
+    save_label: "Save",
+    flexible_start: "A flexible start",
+    per_month_stars: "Stars / month",
+    included_title: "What's included",
+    checkout_title: "Your selection",
+    stars_topup_hint: "Top up your balance with PremiumBot",
     processing: "Processing...",
     payment_create_error: "Could not create the payment. Please try again later.",
 

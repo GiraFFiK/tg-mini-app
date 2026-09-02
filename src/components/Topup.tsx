@@ -5,67 +5,104 @@ import "./Topup.css";
 import type { AppUser } from "../types/app";
 
 type PaymentStatus = "paid" | "failed" | "cancelled" | "pending";
+type PlanId = "month" | "3months" | "6months" | "year";
 
 interface TopupProps {
   user?: AppUser | null;
   isMobile?: boolean;
 }
 
+interface SubscriptionPlan {
+  id: PlanId;
+  name: string;
+  months: number;
+  stars: number;
+  popular?: boolean;
+}
+
+const MONTHLY_REFERENCE_PRICE = 60;
+
+function DeviceIllustration() {
+  return (
+    <div className="multi-device-offer__visual" aria-hidden="true">
+      <span className="multi-device-offer__device multi-device-offer__device--desktop">
+        <svg viewBox="0 0 32 32" fill="none">
+          <rect x="3" y="5" width="26" height="18" rx="3" stroke="currentColor" strokeWidth="2" />
+          <path d="M11 28h10M16 23v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      </span>
+      <span className="multi-device-offer__device multi-device-offer__device--tablet">
+        <svg viewBox="0 0 32 32" fill="none">
+          <rect x="6" y="3" width="20" height="26" rx="4" stroke="currentColor" strokeWidth="2" />
+          <circle cx="16" cy="25" r="1" fill="currentColor" />
+        </svg>
+      </span>
+      <span className="multi-device-offer__device multi-device-offer__device--phone">
+        <svg viewBox="0 0 32 32" fill="none">
+          <rect x="9" y="2" width="14" height="28" rx="4" stroke="currentColor" strokeWidth="2" />
+          <path d="M14 6h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="16" cy="26" r="1" fill="currentColor" />
+        </svg>
+      </span>
+    </div>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default function Topup({ user, isMobile = true }: TopupProps) {
-  const { t } = useLanguage();
-  const [selectedPlan, setSelectedPlan] = useState<string>("month");
-  const [processing, setProcessing] = useState<boolean>(false);
-  const [showError, setShowError] = useState<boolean>(false);
+  const { t, language } = useLanguage();
+  const [selectedPlan, setSelectedPlan] = useState<PlanId>("3months");
+  const [processing, setProcessing] = useState(false);
+  const [showError, setShowError] = useState(false);
 
   const telegramId = user?.telegramId;
-
-  const plans = [
-    {
-      id: "month",
-      name: t("month"),
-      stars: 50,
-      discount: 0,
-      active: true,
-      popular: false,
-      days: 30,
-    },
-    {
-      id: "3months",
-      name: t("months_3"),
-      stars: 130,
-      discount: 13,
-      active: true,
-      popular: true,
-      days: 90,
-    },
-    {
-      id: "6months",
-      name: t("months_6"),
-      stars: 280,
-      discount: 0,
-      active: false,
-      popular: false,
-      days: 180,
-    },
-    {
-      id: "year",
-      name: t("year"),
-      stars: 550,
-      discount: 0,
-      active: false,
-      popular: false,
-      days: 365,
-    },
+  const plans: SubscriptionPlan[] = [
+    { id: "month", name: t("month"), months: 1, stars: 60 },
+    { id: "3months", name: t("months_3"), months: 3, stars: 155, popular: true },
+    { id: "6months", name: t("months_6"), months: 6, stars: 330 },
+    { id: "year", name: t("year"), months: 12, stars: 650 },
   ];
 
+  const selectedPlanData = plans.find((plan) => plan.id === selectedPlan) ?? plans[1];
+  const numberFormatter = new Intl.NumberFormat(language === "ru" ? "ru-RU" : "en-US", {
+    maximumFractionDigits: 1,
+  });
+
+  const vibrate = (type: "selection" | "impact" = "selection") => {
+    const haptics = window.Telegram?.WebApp?.HapticFeedback;
+    if (haptics) {
+      if (type === "impact") {
+        haptics.impactOccurred("medium");
+      } else {
+        haptics.selectionChanged?.();
+      }
+      return;
+    }
+    navigator.vibrate?.(type === "impact" ? 35 : 20);
+  };
+
+  const handleSelectPlan = (planId: PlanId) => {
+    vibrate();
+    setSelectedPlan(planId);
+    setShowError(false);
+  };
+
   const handleTopUp = () => {
+    vibrate("impact");
     window.Telegram?.WebApp?.openTelegramLink?.("https://t.me/PremiumBot");
   };
 
   const handleSubscribe = async () => {
-    const selected = plans.find((p) => p.id === selectedPlan);
-    if (!selected?.active || !telegramId) return;
+    if (!telegramId) return;
 
+    vibrate("impact");
     setProcessing(true);
     setShowError(false);
 
@@ -91,9 +128,7 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
           "Content-Type": "application/json",
           "X-Telegram-Init-Data": initData,
         },
-        body: JSON.stringify({
-          plan: selectedPlan,
-        }),
+        body: JSON.stringify({ plan: selectedPlan }),
       });
 
       const data = await response.json();
@@ -118,13 +153,11 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
     } catch (error: unknown) {
       console.error("Payment error:", error);
       setShowError(true);
-      setTimeout(() => setShowError(false), 5000);
+      window.setTimeout(() => setShowError(false), 5000);
     } finally {
       setProcessing(false);
     }
   };
-
-  const selectedPlanData = plans.find((p) => p.id === selectedPlan);
 
   const topupStyle = {
     paddingTop: isMobile ? "calc(env(safe-area-inset-top) + 76px)" : "32px",
@@ -133,165 +166,120 @@ export default function Topup({ user, isMobile = true }: TopupProps) {
   return (
     <div className="topup-page" style={topupStyle}>
       <div className="container">
-        <div className="topup__header">
+        <header className="topup__header">
           <h1 className="topup__title">{t("subscription_title")}</h1>
           <p className="topup__subtitle">{t("subscription_subtitle")}</p>
-        </div>
+        </header>
 
-        <div className="stars-info">
-          <div className="stars-info__content">
-            <div className="stars-info__icon">
-              <img src={starsIcon} alt="stars" width="40" height="40" />
-            </div>
-            <div className="stars-info__text">
-              <h3 className="stars-info__title">{t("stars_payment_title")}</h3>
-              <p className="stars-info__description">
-                {t("stars_payment_description")}
-              </p>
+        <section className="multi-device-offer">
+          <div className="multi-device-offer__content">
+            <span className="multi-device-offer__eyebrow">{t("one_subscription")}</span>
+            <h2>{t("multi_device_title")}</h2>
+            <p>{t("multi_device_description")}</p>
+            <div className="multi-device-offer__tags">
+              <span>{t("all_platforms_feature")}</span>
+              <span>{t("one_config_feature")}</span>
             </div>
           </div>
-          <button className="stars-info__button" onClick={handleTopUp}>
-            <span>{t("top_up") || "Пополнить Stars"}</span>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M6 3L11 8L6 13"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+          <DeviceIllustration />
+        </section>
+
+        <section className="period-picker">
+          <div className="period-picker__header">
+            <div>
+              <h2>{t("choose_period")}</h2>
+              <p>{t("choose_period_hint")}</p>
+            </div>
+            <span className="period-picker__device-limit">{t("up_to_five_devices")}</span>
+          </div>
+
+          <div className="period-options" role="radiogroup" aria-label={t("choose_period")}>
+            {plans.map((plan) => {
+              const monthlyPrice = plan.stars / plan.months;
+              const savings = MONTHLY_REFERENCE_PRICE * plan.months - plan.stars;
+              const isSelected = selectedPlan === plan.id;
+
+              return (
+                <button
+                  key={plan.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={isSelected}
+                  className={isSelected ? "period-option period-option--active" : "period-option"}
+                  onClick={() => handleSelectPlan(plan.id)}
+                >
+                  <span className="period-option__selector" aria-hidden="true">
+                    {isSelected && <span />}
+                  </span>
+                  <span className="period-option__copy">
+                    <span className="period-option__title-row">
+                      <strong>{plan.name}</strong>
+                      {plan.popular && <span className="period-option__popular">{t("best_choice")}</span>}
+                    </span>
+                    <small>
+                      {savings > 0
+                        ? `${t("save_label")} ${savings} Stars`
+                        : t("flexible_start")}
+                    </small>
+                  </span>
+                  <span className="period-option__price">
+                    <strong>
+                      {plan.stars}
+                      <img src={starsIcon} alt="" aria-hidden="true" />
+                    </strong>
+                    <small>
+                      {numberFormatter.format(monthlyPrice)} {t("per_month_stars")}
+                    </small>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="plan-includes">
+          <h2>{t("included_title")}</h2>
+          <div className="plan-includes__grid">
+            <span><CheckIcon />{t("up_to_five_devices")}</span>
+            <span><CheckIcon />{t("full_access")}</span>
+            <span><CheckIcon />{t("priority_support")}</span>
+            <span><CheckIcon />{t("unlimited")}</span>
+          </div>
+        </section>
+
+        <section className="plan-checkout">
+          <div className="plan-checkout__summary">
+            <span>{t("checkout_title")}</span>
+            <strong>{selectedPlanData.name} · {t("up_to_five_devices")}</strong>
+          </div>
+          <button
+            type="button"
+            className={showError ? "plan-checkout__button plan-checkout__button--error" : "plan-checkout__button"}
+            onClick={handleSubscribe}
+            disabled={processing || !telegramId}
+          >
+            <span>{processing ? t("processing") : t("subscribe")}</span>
+            <span className="plan-checkout__price">
+              {selectedPlanData.stars}
+              <img src={starsIcon} alt="" aria-hidden="true" />
+            </span>
           </button>
+          <p className="plan-checkout__terms">{t("terms")}</p>
+          {showError && (
+            <p className="plan-checkout__error" role="alert">
+              {t("payment_create_error")}
+            </p>
+          )}
+        </section>
+
+        <div className="stars-wallet-row">
+          <img src={starsIcon} alt="" aria-hidden="true" />
+          <span>
+            <strong>{t("stars_payment_title")}</strong>
+            <small>{t("stars_topup_hint")}</small>
+          </span>
+          <button type="button" onClick={handleTopUp}>{t("top_up")}</button>
         </div>
-
-        <div className="plans-grid">
-          {plans.map((plan) => (
-            <div
-              key={plan.id}
-              className={`plan-card 
-                ${selectedPlan === plan.id ? "plan-card--active" : ""} 
-                ${plan.popular ? "plan-card--popular" : ""}
-                ${!plan.active ? "plan-card--inactive" : ""}
-              `}
-              onClick={() => {
-                if (plan.active) {
-                  setSelectedPlan(plan.id);
-                  setShowError(false);
-                }
-              }}
-            >
-              {plan.popular && plan.active && (
-                <div className="plan-card__badge">
-                  <span>🔥 {t("popular")}</span>
-                </div>
-              )}
-
-              {!plan.active && (
-                <div className="plan-card__coming-soon">
-                  <span>✨ {t("coming_soon")}</span>
-                </div>
-              )}
-
-              <div className="plan-card__content">
-                <div className="plan-card__header">
-                  <h3 className="plan-card__name">{plan.name}</h3>
-                </div>
-
-                <div className="plan-card__price">
-                  <div className="plan-card__price-value">
-                    <span>{plan.stars}</span>
-                    <img
-                      src={starsIcon}
-                      alt="stars"
-                      className="plan-card__stars-icon"
-                      width="28"
-                      height="28"
-                    />
-                  </div>
-                  {plan.discount > 0 && plan.active && (
-                    <span className="plan-card__discount">-{plan.discount}%</span>
-                  )}
-                </div>
-
-                {plan.active && (
-                  <>
-                    <div className="plan-card__features">
-                      <div className="plan-card__feature">
-                        <span className="plan-card__feature-icon">✓</span>
-                        <span>{t("full_access")}</span>
-                      </div>
-                      <div className="plan-card__feature">
-                        <span className="plan-card__feature-icon">✓</span>
-                        <span>{t("priority_support")}</span>
-                      </div>
-                      <div className="plan-card__feature">
-                        <span className="plan-card__feature-icon">✓</span>
-                        <span>{t("unlimited")}</span>
-                      </div>
-                    </div>
-
-                    <div className="plan-card__footer">
-                      <div className="plan-card__price-per-day">
-                        <span>{Math.round((plan.stars / plan.days) * 10) / 10}</span>
-                        <img
-                          src={starsIcon}
-                          alt="stars"
-                          className="plan-card__price-per-day-icon"
-                          width="16"
-                          height="16"
-                        />
-                        <span>/{t("day") || "день"}</span>
-                      </div>
-                      {plan.id === "3months" && (
-                        <div className="plan-card__savings">
-                          <span>{t("economy")} 20</span>
-                          <img
-                            src={starsIcon}
-                            alt="stars"
-                            className="plan-card__savings-icon"
-                            width="16"
-                            height="16"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {selectedPlanData?.active && (
-          <div className="topup__action">
-            <button
-              className={`topup__button ${showError ? "topup__button--error" : ""}`}
-              onClick={handleSubscribe}
-              disabled={processing}
-            >
-              <span>{processing ? t("processing") : t("subscribe")}</span>
-              <span className="topup__button-price">
-                <span>{selectedPlanData.stars}</span>
-                <img
-                  src={starsIcon}
-                  alt="stars"
-                  className="topup__button-price-icon"
-                  width="20"
-                  height="20"
-                />
-              </span>
-            </button>
-
-            {showError && (
-              <div className="topup__error">
-                <span className="topup__error-icon">⚠️</span>
-                <p className="topup__error-text">
-                  {t("payment_create_error")}
-                </p>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
