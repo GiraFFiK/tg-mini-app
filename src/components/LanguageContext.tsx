@@ -23,7 +23,7 @@ const translations = {
     nav_settings: "Настройки",
 
     // Home
-    wallet: "allet",
+    wallet: "Кошелек",
     days_remaining: "дней осталось",
     purchase_history: "История покупок и бонусов",
     total: "всего",
@@ -97,6 +97,21 @@ const translations = {
       "У вас пока нет покупок или бонусов.",
     go_to_topup: "Перейти к покупке",
     subscription_inactive: "Подписка не активирована. Оформите её, чтобы получить доступ к VPN.",
+    home_welcome: "С возвращением",
+    home_title: "Ваш защищенный интернет",
+    home_no_subscription_title: "Подключите AuraVPN",
+    renew_subscription: "Продлить",
+    select_plan: "Выбрать тариф",
+    quick_connection: "Быстрое подключение",
+    ready_to_connect: "Готово",
+    copy_config_action: "Скопировать конфиг",
+    copy_config_hint: "Затем импортируйте его в приложение",
+    home_config_locked_hint: "Конфиг появится после оплаты",
+    device_coverage: "Одна подписка для 5 устройств",
+    supported_platforms: "iOS, Android, Windows и macOS",
+    setup_center: "Центр подключения",
+    setup_center_hint: "2 инструкции",
+    recent_activity: "Последние операции",
 
     // НОВЫЕ ПЕРЕВОДЫ ДЛЯ ИСТОРИИ
     welcome_bonus: "🎁 Бонус за первый вход",
@@ -175,6 +190,14 @@ const translations = {
     bonus_title: "Мгновенный бонус!",
     bonus_description:
       "Как только друг перейдет по ссылке и запустит бота, вы оба получите по 3 дня бесплатно. Даже без покупки подписки!",
+    friend_reward_eyebrow: "БОНУС ЗА ПРИГЛАШЕНИЕ",
+    friend_reward_title: "3 дня вам и другу",
+    friend_reward_description:
+      "Отправьте персональную ссылку. Когда друг запустит бота, бесплатные дни начислятся автоматически.",
+    your_results: "Ваш результат",
+    invitation_ready: "Ссылка готова",
+    invitation_hint: "Отправьте ее в личный чат или группу. Начисление бонуса не требует покупки.",
+    friends_activity: "Активность друзей",
 
     // Settings
     settings: "Настройки",
@@ -195,6 +218,11 @@ const translations = {
     coming_soon: "Скоро",
     notifications: "Уведомления",
     push_notifications: "Push уведомления",
+    settings_interface_title: "Интерфейс",
+    settings_interface_hint: "Настройте приложение под себя",
+    settings_help_title: "Помощь с подключением",
+    settings_help_hint: "Пошаговые инструкции всегда под рукой",
+    settings_product_hint: "Защита до 5 устройств",
   },
   en: {
     // Common
@@ -283,6 +311,21 @@ const translations = {
       "You have no purchases or bonuses yet.",
     go_to_topup: "Go to plans",
     subscription_inactive: "Subscription is not active. Subscribe to get access to VPN.",
+    home_welcome: "Welcome back",
+    home_title: "Your protected internet",
+    home_no_subscription_title: "Connect AuraVPN",
+    renew_subscription: "Renew",
+    select_plan: "Choose a plan",
+    quick_connection: "Quick connection",
+    ready_to_connect: "Ready",
+    copy_config_action: "Copy config",
+    copy_config_hint: "Then import it into the app",
+    home_config_locked_hint: "Your config will appear after payment",
+    device_coverage: "One subscription for 5 devices",
+    supported_platforms: "iOS, Android, Windows, and macOS",
+    setup_center: "Connection center",
+    setup_center_hint: "2 guides",
+    recent_activity: "Recent activity",
 
     // НОВЫЕ ПЕРЕВОДЫ ДЛЯ ИСТОРИИ
     welcome_bonus: "🎁 Welcome bonus",
@@ -360,6 +403,14 @@ const translations = {
     bonus_title: "Instant bonus!",
     bonus_description:
       "As soon as a friend follows the link and starts the bot, you both get 3 free days. Even without purchasing a subscription!",
+    friend_reward_eyebrow: "INVITATION BONUS",
+    friend_reward_title: "3 days for you both",
+    friend_reward_description:
+      "Share your personal link. When your friend starts the bot, the free days are added automatically.",
+    your_results: "Your results",
+    invitation_ready: "Link ready",
+    invitation_hint: "Send it in a private chat or group. No purchase is required to receive the bonus.",
+    friends_activity: "Friend activity",
 
     // Settings
     settings: "Settings",
@@ -380,6 +431,11 @@ const translations = {
     coming_soon: "Coming soon",
     notifications: "Notifications",
     push_notifications: "Push notifications",
+    settings_interface_title: "Interface",
+    settings_interface_hint: "Make the application comfortable for you",
+    settings_help_title: "Connection help",
+    settings_help_hint: "Step-by-step guides are always close at hand",
+    settings_product_hint: "Protection for up to 5 devices",
   },
 };
 

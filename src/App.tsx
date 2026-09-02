@@ -15,6 +15,7 @@ import "./redesign.css";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<string>("home");
+  const [pendingInstruction, setPendingInstruction] = useState<"region" | "setup" | null>(null);
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -70,6 +71,11 @@ export default function App() {
     initApp();
   }, []);
 
+  const openInstruction = (instruction: "region" | "setup") => {
+    setPendingInstruction(instruction);
+    setCurrentPage("home");
+  };
+
   return (
     <ThemeProvider>
       <LanguageProvider>
@@ -79,7 +85,14 @@ export default function App() {
           ) : (
             <main className="app-pages">
               <section className={`app-page ${currentPage === "home" ? "app-page--active" : ""}`}>
-                <Home user={user} isMobile={isMobile} isActive={currentPage === "home"} />
+                <Home
+                  user={user}
+                  isMobile={isMobile}
+                  isActive={currentPage === "home"}
+                  requestedInstruction={pendingInstruction}
+                  onInstructionOpened={() => setPendingInstruction(null)}
+                  onNavigate={setCurrentPage}
+                />
               </section>
               <section className={`app-page ${currentPage === "topup" ? "app-page--active" : ""}`}>
                 <Topup user={user} isMobile={isMobile} />
@@ -88,7 +101,7 @@ export default function App() {
                 <Referral user={user} isMobile={isMobile} />
               </section>
               <section className={`app-page ${currentPage === "settings" ? "app-page--active" : ""}`}>
-                <Settings isMobile={isMobile} />
+                <Settings isMobile={isMobile} onOpenInstruction={openInstruction} />
               </section>
             </main>
           )}

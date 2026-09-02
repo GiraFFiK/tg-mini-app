@@ -15,13 +15,15 @@ interface NavigationProps {
 export default function Navigation({ activePage, onPageChange }: NavigationProps) {
   const { t } = useLanguage();
 
-  // 🔥 ФУНКЦИЯ ВИБРАЦИИ
   const vibrate = () => {
     const tg = window.Telegram?.WebApp;
 
     if (tg?.HapticFeedback) {
       tg.HapticFeedback.impactOccurred("medium");
+      return;
     }
+
+    navigator.vibrate?.(25);
   };
 
   const navItems: NavItem[] = [
@@ -71,7 +73,7 @@ export default function Navigation({ activePage, onPageChange }: NavigationProps
   ];
 
   const handleNavClick = (pageId: string) => {
-    vibrate(); // 🔥 ВИБРАЦИЯ ПРИ КЛИКЕ
+    vibrate();
     onPageChange(pageId);
   };
 
@@ -82,6 +84,8 @@ export default function Navigation({ activePage, onPageChange }: NavigationProps
           <button
             key={item.id}
             className={`nav-minimal__item ${activePage === item.id ? 'nav-minimal__item--active' : ''}`}
+            type="button"
+            aria-current={activePage === item.id ? "page" : undefined}
             onClick={() => handleNavClick(item.id)}
           >
             <span className="nav-minimal__icon">{item.icon}</span>

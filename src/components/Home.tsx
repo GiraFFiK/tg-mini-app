@@ -55,9 +55,19 @@ interface HomeProps {
   user?: AppUser | null;
   isMobile?: boolean;
   isActive?: boolean;
+  requestedInstruction?: "region" | "setup" | null;
+  onInstructionOpened?: () => void;
+  onNavigate?: (page: string) => void;
 }
 
-export default function Home({ user, isMobile = true, isActive = true }: HomeProps) {
+export default function Home({
+  user,
+  isMobile = true,
+  isActive = true,
+  requestedInstruction = null,
+  onInstructionOpened,
+  onNavigate,
+}: HomeProps) {
   const { t, language } = useLanguage();
   const tg = window.Telegram?.WebApp;
   const tgUser = tg?.initDataUnsafe?.user;
@@ -256,6 +266,12 @@ export default function Home({ user, isMobile = true, isActive = true }: HomePro
   const closeInstruction = () => {
     setActiveInstruction(null);
   };
+
+  useEffect(() => {
+    if (!requestedInstruction) return;
+    setActiveInstruction(requestedInstruction);
+    onInstructionOpened?.();
+  }, [onInstructionOpened, requestedInstruction]);
 
   // Получение инструкции и ссылки для устройства
   const deviceDownloadLinks: Record<string, string> = {
@@ -485,273 +501,163 @@ export default function Home({ user, isMobile = true, isActive = true }: HomePro
           </div>
         </div>
       )}
-      <div className="container">
-        
-        {/* Карточка подписки с профилем */}
-        <div className="subscription-card">
-          {/* Шапка карточки с подпиской и статусом */}
-          <div className="subscription-card__header">
-            <span className="subscription-card__title">
-              {t("subscription")}
+      <div className="container home-dashboard">
+        <header className="home-dashboard__header">
+          <div>
+            <span className="home-dashboard__brand">AuraVPN</span>
+            <h1>{firstName ? `${t("home_welcome")}, ${firstName}` : t("home_title")}</h1>
+          </div>
+          <div className="home-dashboard__avatar">
+            {photoUrl ? <img src={photoUrl} alt={username} /> : <span>{initials}</span>}
+          </div>
+        </header>
+
+        <section className={`home-plan ${subscriptionLoaded && !hasSubscription ? "home-plan--inactive" : ""}`}>
+          <div className="home-plan__topline">
+            <span>{t("subscription")}</span>
+            <span className="home-plan__status">
+              <i />
+              {!subscriptionLoaded ? t("updating") : hasSubscription ? t("active") : t("inactive")}
             </span>
-            <div>
-              <span
-                className={`subscription-card__badge ${subscriptionLoaded && !hasSubscription ? "subscription-card__badge--inactive" : ""} ${!subscriptionLoaded ? "subscription-card__badge--loading" : ""}`}
-              >
-                {!subscriptionLoaded
-                  ? t("updating")
-                  : hasSubscription
-                    ? t("active")
-                    : t("inactive")}
-              </span>
-            </div>
           </div>
 
-          {/* Блок с аватаром и пользователем */}
-          <div className="subscription-card__profile">
-            <div className="subscription-card__avatar-wrapper">
-              {photoUrl ? (
-                <img
-                  src={photoUrl}
-                  alt={username}
-                  className="subscription-card__avatar"
-                />
-              ) : (
-                <div className="subscription-card__avatar subscription-card__avatar--placeholder">
-                  {initials}
-                </div>
-              )}
-              <div className="subscription-card__avatar-glow"></div>
-            </div>
-            <div className="subscription-card__user-info">
-              <span className="subscription-card__username">@{username}</span>
-            </div>
-          </div>
-
-          {/* Дни и прогресс - показываем только если есть подписка */}
           {!subscriptionLoaded ? (
-            <div className="subscription-card__loading" aria-label={t("updating")}>
-              <span className="subscription-card__skeleton subscription-card__skeleton--large" />
-              <span className="subscription-card__skeleton" />
-              <span className="subscription-card__skeleton subscription-card__skeleton--short" />
-            </div>
-          ) : hasSubscription ? (
-            <div className="subscription-card__content">
-              <div className="subscription-card__days">
-                <span className="subscription-card__days-number">
-                  {daysLeft}
-                </span>
-                <span className="subscription-card__days-label">
-                  {t("days_left")}
-                </span>
-              </div>
-
-              <div className="subscription-card__progress">
-                <div
-                  className="subscription-card__progress-bar"
-                  style={{ width: `${Math.min((daysLeft / 30) * 100, 100)}%` }}
-                />
-              </div>
-
-              <div className="subscription-card__footer">
-                <span className="subscription-card__date">
-                  {t("valid_until")} {expiryDate}
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div className="subscription-card__inactive">
-              <p className="subscription-card__inactive-text">
-                {t("subscription_inactive") ||
-                  "Подписка не активирована. Оформите подписку, чтобы получить доступ ко всем функциям."}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Раздел с кодом активации */}
-        <div className="activation-section">
-          <h2 className="activation-section__title">
-            {t("activation_code") || "Ключ активации VPN"}
-          </h2>
-
-          {!subscriptionLoaded ? (
-            <div className="activation-code__loading" aria-label={t("updating")}>
+            <div className="home-plan__loading" aria-label={t("updating")}>
+              <span />
               <span />
               <span />
             </div>
           ) : hasSubscription ? (
             <>
-              <div className="activation-code">
-                <div className="activation-code__wrapper">
-                  <span className="activation-code__text">
-                    {activationCode}
-                  </span>
+              <div className="home-plan__main">
+                <div className="home-plan__days">
+                  <strong>{daysLeft}</strong>
+                  <span>{t("days_left")}</span>
                 </div>
-                <button
-                  className={`activation-code__button ${copied ? "activation-code__button--copied" : ""}`}
-                  onClick={handleCopyCode}
-                >
-                  {copied ? (
-                    <>
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path
-                          d="M20 6L9 17L4 12"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      <span>{t("copied") || "Скопировано!"}</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <rect
-                          x="9"
-                          y="9"
-                          width="13"
-                          height="13"
-                          rx="2"
-                          ry="2"
-                        ></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                      </svg>
-                      <span>{t("copy") || "Копировать"}</span>
-                    </>
-                  )}
+                <button className="home-plan__renew" type="button" onClick={() => onNavigate?.("topup")}>
+                  <span>{t("renew_subscription")}</span>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                    <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </button>
               </div>
-
-              <button
-                className="activation-code__replace"
-                onClick={handleGenerateNewCode}
-              >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path
-                    d="M23 4v6h-6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M1 20v-6h6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span>{t("replace_code") || "Заменить ключ"}</span>
-              </button>
+              <div className="home-plan__progress" aria-hidden="true">
+                <span style={{ width: `${Math.min((daysLeft / 30) * 100, 100)}%` }} />
+              </div>
+              <div className="home-plan__footer">
+                <span>{t("valid_until")} {expiryDate}</span>
+                <strong>{t("up_to_five_devices")}</strong>
+              </div>
             </>
           ) : (
-            <div className="activation-code__empty">
-              <span className="activation-code__empty-icon">🔒</span>
-              <p className="activation-code__empty-text">
-                {t("no_subscription_code") ||
-                  "Активируйте подписку, чтобы получить ключ"}
-              </p>
+            <div className="home-plan__empty">
+              <div>
+                <h2>{t("home_no_subscription_title")}</h2>
+                <p>{t("subscription_inactive")}</p>
+              </div>
+              <button type="button" onClick={() => onNavigate?.("topup")}>
+                {t("select_plan")}
+              </button>
             </div>
           )}
-        </div>
+        </section>
 
-        {/* Раздел выбора устройства */}
-        <div className="instructions-section">
-          <h2 className="instructions-section__title">
-            {t("instructions")}
-          </h2>
-          <p className="instructions-section__subtitle">
-            {t("instructions_subtitle")}
-          </p>
+        <section className="home-connect">
+          <div className="section-heading-row">
+            <div>
+              <span className="section-kicker">{t("quick_connection")}</span>
+              <h2>{t("activation_code")}</h2>
+            </div>
+            <span className={`connection-state ${hasSubscription ? "connection-state--ready" : ""}`}>
+              <i /> {hasSubscription ? t("ready_to_connect") : t("inactive")}
+            </span>
+          </div>
 
-          <div className="instructions-actions">
-            <button
-              className="instructions-action"
-              type="button"
-              onClick={() => openInstruction("region")}
-            >
-              <span className="instructions-action__icon">
-                <svg
-                  width="22"
-                  height="22"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M2 12h20" />
-                  <path d="M12 2a15.3 15.3 0 0 1 0 20" />
-                  <path d="M12 2a15.3 15.3 0 0 0 0 20" />
+          {!subscriptionLoaded ? (
+            <div className="home-connect__loading" aria-label={t("updating")}><span /><span /></div>
+          ) : hasSubscription ? (
+            <>
+              <button className="quick-connect-button" type="button" onClick={handleCopyCode}>
+                <span className="quick-connect-button__icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" strokeLinejoin="round" />
+                    <path d="m9 12 2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <span>
+                  <strong>{copied ? t("copied") : t("copy_config_action")}</strong>
+                  <small>{t("copy_config_hint")}</small>
+                </span>
+                <svg className="quick-connect-button__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
+              </button>
+
+              <div className="config-line">
+                <div className="config-line__value">
+                  <span>{t("one_config_feature")}</span>
+                  <code>{activationCode}</code>
+                </div>
+                <button type="button" title={t("copy")} aria-label={t("copy")} onClick={handleCopyCode}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="9" y="9" width="12" height="12" rx="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                </button>
+                <button type="button" title={t("replace_code")} aria-label={t("replace_code")} onClick={handleGenerateNewCode}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M20 7h-5V2M4 17h5v5M19 12a7 7 0 0 0-12-5L4 10M5 12a7 7 0 0 0 12 5l3-3" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="home-connect__empty">
+              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="4" y="10" width="16" height="11" rx="3" />
+                <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+              </svg>
+              <div><strong>{t("no_subscription_code")}</strong><small>{t("home_config_locked_hint")}</small></div>
+            </div>
+          )}
+
+          <div className="device-coverage">
+            <div className="device-coverage__icons" aria-hidden="true">
+              <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="7" y="2" width="10" height="20" rx="2" /><path d="M11 18h2" /></svg></span>
+              <span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="12" rx="2" /><path d="M8 20h8M12 16v4" /></svg></span>
+              <span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="2" width="14" height="20" rx="2" /><path d="M9 18h6" /></svg></span>
+            </div>
+            <div><strong>{t("device_coverage")}</strong><small>{t("supported_platforms")}</small></div>
+          </div>
+        </section>
+
+        <section className="home-guides">
+          <div className="section-heading-row">
+            <div><span className="section-kicker">{t("setup_center")}</span><h2>{t("instructions")}</h2></div>
+            <small>{t("setup_center_hint")}</small>
+          </div>
+          <div className="home-guides__grid">
+            <button type="button" onClick={() => openInstruction("setup")}>
+              <span className="home-guides__icon home-guides__icon--violet">
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v12M7 10l5 5 5-5M5 21h14" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </span>
-              <span>
-                <strong>{t("region_instruction_button")}</strong>
-                <small>{t("region_instruction_hint")}</small>
-              </span>
+              <span><strong>{t("setup_instruction_button")}</strong><small>{t("setup_instruction_hint")}</small></span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </button>
-
-            <button
-              className="instructions-action"
-              type="button"
-              onClick={() => openInstruction("setup")}
-            >
-              <span className="instructions-action__icon">
-                <svg
-                  width="22"
-                  height="22"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M12 3v12" strokeLinecap="round" />
-                  <path d="M7 10l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M5 21h14" strokeLinecap="round" />
-                </svg>
+            <button type="button" onClick={() => openInstruction("region")}>
+              <span className="home-guides__icon home-guides__icon--cyan">
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9S14.5 18.5 12 21M12 3c-2.5 2.5-3.8 5.5-3.8 9s1.3 6.5 3.8 9" /></svg>
               </span>
-              <span>
-                <strong>{t("setup_instruction_button")}</strong>
-                <small>{t("setup_instruction_hint")}</small>
-              </span>
+              <span><strong>{t("region_instruction_button")}</strong><small>{t("region_instruction_hint")}</small></span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </button>
           </div>
-        </div>
+        </section>
 
-        {/* История покупок и бонусов */}
-        <div className="history-section">
-          <div className="history-section__header">
-            <h2 className="history-section__title">
-              {t("purchase_history") || "История покупок и бонусов"}
-            </h2>
-            {history.length > 0 && (
-              <span className="history-section__count">
-                {history.length} {t("total") || "всего"}
-              </span>
-            )}
+        <section className="home-activity">
+          <div className="section-heading-row">
+            <div><span className="section-kicker">{t("recent_activity")}</span><h2>{t("purchase_history")}</h2></div>
+            {history.length > 0 && <span className="section-count">{history.length}</span>}
           </div>
 
           {history.length > 0 ? (
@@ -759,96 +665,41 @@ export default function Home({ user, isMobile = true, isActive = true }: HomePro
               <div className="history-list">
                 {visibleHistory.map((item) => (
                   <div key={item.id} className="history-item">
-                    <div className="history-item__left">
-                      <div className="history-item__date">{item.date}</div>
-                      <div className="history-item__plan">
-                        {getItemType(item)}
-                      </div>
-                      {item.description && (
-                        <div className="history-item__description">
-                          {item.description}
-                        </div>
+                    <div className="history-item__marker">
+                      {item.type === "purchase" ? (
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2l1.5 4H20l-2 8H9L6 2H2M9 20h.01M17 20h.01" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      ) : (
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 12v10H4V12M2 7h20v5H2zM12 7v15M12 7H7.5A2.5 2.5 0 1 1 10 4.5L12 7Zm0 0h4.5A2.5 2.5 0 1 0 14 4.5L12 7Z" strokeLinecap="round" strokeLinejoin="round" /></svg>
                       )}
                     </div>
+                    <div className="history-item__left">
+                      <div className="history-item__plan">{getItemType(item)}</div>
+                      <div className="history-item__date">{item.date}</div>
+                    </div>
                     <div className="history-item__right">
-                      {item.type === 'purchase' ? (
-                        <div className="history-item__stars">
-                          <span className="history-item__stars-number">
-                            {item.stars}
-                          </span>
-                          <img
-                            src={starsIcon}
-                            alt="⭐"
-                            className="history-item__stars-icon"
-                            width="16"
-                            height="16"
-                          />
-                        </div>
+                      {item.type === "purchase" ? (
+                        <div className="history-item__stars"><span>{item.stars}</span><img src={starsIcon} alt="Stars" width="16" height="16" /></div>
                       ) : (
-                        <div className="history-item__bonus">
-                          <span className="history-item__bonus-number">
-                            +{item.days}
-                          </span>
-                          <span className="history-item__bonus-days">
-                            {t("days") || "дн"}
-                          </span>
-                        </div>
+                        <div className="history-item__bonus">+{item.days} {t("bonus_days_short")}</div>
                       )}
-                      <div
-                        className={`history-item__status history-item__status--${item.status}`}
-                      >
-                        {item.status === "active"
-                          ? t("active") || "Активен"
-                          : t("expired") || "Истек"}
-                      </div>
                     </div>
                   </div>
                 ))}
               </div>
-
               {history.length > 3 && (
-                <button
-                  className="history-section__show-more"
-                  onClick={() => setShowAllHistory(!showAllHistory)}
-                >
-                  <span>
-                    {showAllHistory
-                      ? t("show_less") || "Скрыть"
-                      : t("show_more") || "Показать еще"}
-                  </span>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    style={{
-                      transform: showAllHistory ? "rotate(180deg)" : "none",
-                      transition: "transform 0.3s ease",
-                    }}
-                  >
-                    <path
-                      d="M4 6L8 10L12 6"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                <button className="history-section__show-more" type="button" onClick={() => setShowAllHistory(!showAllHistory)}>
+                  {showAllHistory ? t("show_less") : t("show_more")}
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ transform: showAllHistory ? "rotate(180deg)" : "none" }}><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </button>
               )}
             </>
           ) : (
             <div className="history-empty">
-              <div className="history-empty__icon">🛒</div>
-              <p className="history-empty__title">
-                {t("no_purchases_title") || "История покупок пуста"}
-              </p>
-              <p className="history-empty__text">
-                {t("no_purchases_text") || "У вас пока нет покупок или бонусов."}
-              </p>
+              <span className="history-empty__icon"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18M7 15l4-4 3 3 5-6" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
+              <div><strong>{t("no_purchases_title")}</strong><small>{t("no_purchases_text")}</small></div>
             </div>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );

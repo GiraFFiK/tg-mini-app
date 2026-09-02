@@ -1,9 +1,32 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "./LanguageContext";
-import "./Referral.css";
 import { getReferralInfo } from "../services/api";
 import { useRefresh } from "../../hooks/useRefresh";
 import type { AppUser, ReferralInfo } from "../types/app";
+import "./Referral.css";
+
+const referralMemoryCache = new Map<string, ReferralInfo>();
+
+function readReferralCache(telegramId?: string) {
+  if (!telegramId) return null;
+  const memoryValue = referralMemoryCache.get(telegramId);
+  if (memoryValue) return memoryValue;
+
+  try {
+    const storedValue = sessionStorage.getItem(`referral-data:${telegramId}`);
+    if (!storedValue) return null;
+    const parsedValue = JSON.parse(storedValue) as ReferralInfo;
+    referralMemoryCache.set(telegramId, parsedValue);
+    return parsedValue;
+  } catch {
+    return null;
+  }
+}
+
+function saveReferralCache(telegramId: string, data: ReferralInfo) {
+  referralMemoryCache.set(telegramId, data);
+  sessionStorage.setItem(`referral-data:${telegramId}`, JSON.stringify(data));
+}
 
 interface ReferralProps {
   user?: AppUser | null;
@@ -12,18 +35,26 @@ interface ReferralProps {
 
 export default function Referral({ user, isMobile = true }: ReferralProps) {
   const { t } = useLanguage();
+  const telegramId = user?.telegramId;
   const [copied, setCopied] = useState(false);
   const [showAllReferrals, setShowAllReferrals] = useState(false);
-  const [referralData, setReferralData] = useState<ReferralInfo | null>(null);
+  const [referralData, setReferralData] = useState<ReferralInfo | null>(() => readReferralCache(telegramId));
 
-  const telegramId = user?.telegramId;
+  const vibrate = () => {
+    const feedback = window.Telegram?.WebApp?.HapticFeedback;
+    if (feedback) {
+      feedback.impactOccurred?.("light");
+      return;
+    }
+    navigator.vibrate?.(25);
+  };
 
   const fetchReferralData = useCallback(async () => {
     if (!telegramId) return;
-    
     try {
       const data = await getReferralInfo(telegramId);
       setReferralData(data);
+      saveReferralCache(telegramId, data);
     } catch (error) {
       console.error("Error fetching referral data:", error);
     }
@@ -32,296 +63,146 @@ export default function Referral({ user, isMobile = true }: ReferralProps) {
   const { refresh } = useRefresh(fetchReferralData);
 
   useEffect(() => {
-    const timer = window.setTimeout(fetchReferralData, 0);
+    const timer = window.setTimeout(() => {
+      const cachedData = readReferralCache(telegramId);
+      if (cachedData) setReferralData(cachedData);
+      void fetchReferralData();
+    }, 0);
     return () => window.clearTimeout(timer);
-  }, [fetchReferralData]);
+  }, [fetchReferralData, telegramId]);
 
-  // Автообновление
   useEffect(() => {
     const handleFocus = () => refresh();
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [refresh]);
 
   useEffect(() => {
-    const interval = setInterval(refresh, 60000);
-    return () => clearInterval(interval);
+    const interval = window.setInterval(refresh, 60000);
+    return () => window.clearInterval(interval);
   }, [refresh]);
 
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
     if (!referralData?.referralLink) return;
-    navigator.clipboard.writeText(referralData.referralLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    refresh();
+    vibrate();
+    try {
+      await navigator.clipboard.writeText(referralData.referralLink);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error("Could not copy referral link:", error);
+    }
   };
 
   const handleShareLink = () => {
     if (!referralData?.referralLink) return;
-    
-    const text =
-      t("share_text") ||
-      `Присоединяйся по моей реферальной ссылке и получи 3 дня бесплатного VPN!`;
-    
+    vibrate();
     window.Telegram?.WebApp?.openTelegramLink?.(
-      `https://t.me/share/url?url=${encodeURIComponent(referralData.referralLink)}&text=${encodeURIComponent(text)}`,
+      `https://t.me/share/url?url=${encodeURIComponent(referralData.referralLink)}&text=${encodeURIComponent(t("share_text"))}`,
     );
-  };
-
-  const referralStyle = {
-    paddingTop: isMobile ? 'calc(env(safe-area-inset-top) + 76px)' : '32px',
   };
 
   const referrals = referralData?.invitedList || [];
   const visibleReferrals = showAllReferrals ? referrals : referrals.slice(0, 4);
 
   return (
-    <div className="referral-page" style={referralStyle}>
+    <div
+      className="referral-page friends-dashboard"
+      style={{ paddingTop: isMobile ? "calc(env(safe-area-inset-top) + 76px)" : "32px" }}
+    >
       <div className="container">
-        
-        {/* Заголовок */}
-        <div className="referral__header">
-          <h1 className="referral__title">
-            {t("referral_title") || "Реферальная система"}
-          </h1>
-          <p className="referral__subtitle">
-            {t("referral_subtitle") || "Приглашайте друзей и получайте бонусы"}
-          </p>
-        </div>
+        <header className="referral__header">
+          <span className="page-heading__eyebrow">AuraVPN</span>
+          <h1 className="referral__title">{t("referral_title")}</h1>
+          <p className="referral__subtitle">{t("referral_subtitle")}</p>
+        </header>
 
-        {/* Статистика */}
-        <div className="referral-stats">
-          <div className="referral-stat">
-            <span className="referral-stat__label">
-              {t("total_invited") || "Всего приглашено"}
-            </span>
-            <span className="referral-stat__value">{referralData?.totalInvited || 0}</span>
+        <section className="friends-hero">
+          <div className="friends-hero__copy">
+            <span>{t("friend_reward_eyebrow")}</span>
+            <h2>{t("friend_reward_title")}</h2>
+            <p>{t("friend_reward_description")}</p>
           </div>
-          <div className="referral-stat">
-            <span className="referral-stat__label">
-              {t("activated") || "Активировано"}
-            </span>
-            <span className="referral-stat__value">{referralData?.activatedCount || 0}</span>
+          <div className="friends-hero__visual" aria-hidden="true">
+            <span className="friends-hero__person friends-hero__person--left"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg></span>
+            <span className="friends-hero__person friends-hero__person--right"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg></span>
+            <span className="friends-hero__link"><svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.2 1.2M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.2-1.2" strokeLinecap="round" /></svg></span>
+            <strong>+3</strong>
           </div>
-          <div className="referral-stat">
-            <span className="referral-stat__label">
-              {t("bonus_days") || "Бонусных дней"}
-            </span>
-            <span className="referral-stat__value referral-stat__value--bonus">
-              +{referralData?.totalBonus || 0}
-            </span>
-          </div>
-        </div>
+        </section>
 
-        {/* Информация о бонусе */}
-        <div className="referral-bonus-banner">
-          <div className="referral-bonus-banner__icon">🎁</div>
-          <div className="referral-bonus-banner__content">
-            <h3 className="referral-bonus-banner__title">
-              {t("bonus_title") || "Мгновенный бонус!"}
-            </h3>
-            <p className="referral-bonus-banner__text">
-              {t("bonus_description") ||
-                "Как только друг перейдет по ссылке и запустит бота, вы оба получите по 3 дня бесплатно. Даже без покупки подписки!"}
-            </p>
+        <section className="friends-results">
+          <div className="section-heading-row"><div><span className="section-kicker">{t("your_results")}</span><h2>{t("bonus_days")}</h2></div></div>
+          <div className="friends-results__grid">
+            <div><span>{t("total_invited")}</span><strong>{referralData?.totalInvited || 0}</strong></div>
+            <div><span>{t("activated")}</span><strong>{referralData?.activatedCount || 0}</strong></div>
+            <div className="friends-results__bonus"><span>{t("bonus_days")}</span><strong>+{referralData?.totalBonus || 0}</strong></div>
           </div>
-        </div>
+        </section>
 
-        {/* Реферальная ссылка */}
-        <div className="referral-link-card">
-          <h2 className="referral-link-card__title">
-            {t("your_link") || "Ваша реферальная ссылка"}
-          </h2>
-          <p className="referral-link-card__description">
-            {t("link_description") ||
-              "Отправьте эту ссылку друзьям. Когда они перейдут по ней и запустят бота, вы оба получите по 3 дня бесплатно!"}
-          </p>
-
-          <div className="referral-link__container">
-            <div className="referral-link__wrapper">
-              <span className="referral-link__text">{referralData?.referralLink || ""}</span>
-            </div>
-            <div className="referral-link__actions">
-              <button
-                className={`referral-link__button ${copied ? "referral-link__button--copied" : ""}`}
-                onClick={handleCopyLink}
-              >
-                {copied ? (
-                  <>
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path
-                        d="M20 6L9 17L4 12"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    <span>{t("copied") || "Скопировано!"}</span>
-                  </>
-                ) : (
-                  <>
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <rect
-                        x="9"
-                        y="9"
-                        width="13"
-                        height="13"
-                        rx="2"
-                        ry="2"
-                      ></rect>
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                    </svg>
-                    <span>{t("copy") || "Копировать"}</span>
-                  </>
-                )}
-              </button>
-              <button
-                className="referral-link__button referral-link__button--share"
-                onClick={handleShareLink}
-              >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <circle cx="18" cy="5" r="3" />
-                  <circle cx="6" cy="12" r="3" />
-                  <circle cx="18" cy="19" r="3" />
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                </svg>
-                <span>{t("share") || "Поделиться"}</span>
-              </button>
-            </div>
+        <section className="invite-panel">
+          <div className="section-heading-row">
+            <div><span className="section-kicker">{t("invitation_ready")}</span><h2>{t("your_link")}</h2></div>
+            <span className="invite-panel__status"><i /> {t("active")}</span>
           </div>
-        </div>
+          <p>{t("invitation_hint")}</p>
+          <div className="invite-link"><code>{referralData?.referralLink || t("updating")}</code></div>
+          <div className="invite-actions">
+            <button className="invite-actions__copy" type="button" disabled={!referralData?.referralLink} onClick={handleCopyLink}>
+              {copied ? (
+                <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>{t("copied")}</>
+              ) : (
+                <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>{t("copy")}</>
+              )}
+            </button>
+            <button className="invite-actions__share" type="button" disabled={!referralData?.referralLink} onClick={handleShareLink}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m22 2-7 20-4-9-9-4 20-7Z" strokeLinecap="round" strokeLinejoin="round" /><path d="M22 2 11 13" /></svg>{t("share")}
+            </button>
+          </div>
+        </section>
 
-        {/* Список приглашенных */}
-        <div className="referrals-list-section">
-          <div className="referrals-list-section__header">
-            <h2 className="referrals-list-section__title">
-              {t("invited_friends") || "Приглашенные друзья"}
-            </h2>
-            <span className="referrals-list-section__count">
-              {referrals.length} {t("total") || "всего"}
-            </span>
+        <section className="friends-list-panel">
+          <div className="section-heading-row">
+            <div><span className="section-kicker">{t("friends_activity")}</span><h2>{t("invited_friends")}</h2></div>
+            {referrals.length > 0 && <span className="section-count">{referrals.length}</span>}
           </div>
 
           {referrals.length > 0 ? (
             <>
-              <div className="referrals-list">
+              <div className="friends-list">
                 {visibleReferrals.map((referral) => (
-                  <div key={referral.id} className="referral-item">
-                    <div className="referral-item__left">
-                      <div className="referral-item__avatar-wrapper">
-                        {referral.photoUrl ? (
-                          <img
-                            src={referral.photoUrl}
-                            alt={referral.username}
-                            className="referral-item__avatar-img"
-                          />
-                        ) : (
-                          <div className="referral-item__avatar-placeholder">
-                            {referral.firstName?.[0] || "U"}
-                          </div>
-                        )}
-                      </div>
-                      <div className="referral-item__info">
-                        <div className="referral-item__name">
-                          <span className="referral-item__username">
-                            @{referral.username}
-                          </span>
-                        </div>
-                        <div className="referral-item__date">
-                          {referral.date}
-                        </div>
-                      </div>
+                  <div key={referral.id} className="friend-row">
+                    <div className="friend-row__avatar">
+                      {referral.photoUrl ? <img src={referral.photoUrl} alt={referral.username || referral.firstName || ""} /> : <span>{referral.firstName?.[0] || referral.username?.[0] || "U"}</span>}
                     </div>
-                    <div className="referral-item__right">
-                      {referral.status === "activated" ? (
-                        <>
-                          <div className="referral-item__bonus">
-                            <span className="referral-item__bonus-number">
-                              +{referral.bonus}
-                            </span>
-                            <span className="referral-item__bonus-days">
-                              {t("days") || "дн"}
-                            </span>
-                          </div>
-                          <div className="referral-item__status referral-item__status--activated">
-                            {t("activated") || "Активирован"}
-                          </div>
-                        </>
-                      ) : (
-                        <div className="referral-item__status referral-item__status--pending">
-                          {t("pending") || "Ожидание"}
-                        </div>
-                      )}
+                    <div className="friend-row__copy"><strong>{referral.username ? `@${referral.username}` : referral.firstName || "User"}</strong><small>{referral.date}</small></div>
+                    <div className={referral.status === "activated" ? "friend-row__reward friend-row__reward--active" : "friend-row__reward"}>
+                      {referral.status === "activated" ? `+${referral.bonus} ${t("bonus_days_short")}` : t("pending")}
                     </div>
                   </div>
                 ))}
               </div>
-
               {referrals.length > 4 && (
-                <button
-                  className="referrals-list-section__show-more"
-                  onClick={() => setShowAllReferrals(!showAllReferrals)}
-                >
-                  <span>
-                    {showAllReferrals
-                      ? t("show_less") || "Скрыть"
-                      : t("show_more") || "Показать еще"}
-                  </span>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    style={{
-                      transform: showAllReferrals ? "rotate(180deg)" : "none",
-                      transition: "transform 0.3s ease",
-                    }}
-                  >
-                    <path
-                      d="M4 6L8 10L12 6"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                <button className="friends-list-panel__more" type="button" onClick={() => setShowAllReferrals(!showAllReferrals)}>
+                  {showAllReferrals ? t("show_less") : t("show_more")}
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ transform: showAllReferrals ? "rotate(180deg)" : "none" }}><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </button>
               )}
             </>
           ) : (
-            <div className="referrals-empty">
-              <span className="referrals-empty__icon">👥</span>
-              <p className="referrals-empty__text">
-                {t("no_referrals") || "У вас пока нет приглашенных друзей"}
-              </p>
-              <p className="referrals-empty__hint">
-                {t("share_link_hint") ||
-                  "Поделитесь ссылкой и получите бонусы!"}
-              </p>
+            <div className="friends-empty">
+              <span><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8" strokeLinecap="round" /></svg></span>
+              <div><strong>{t("no_referrals")}</strong><small>{t("share_link_hint")}</small></div>
             </div>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );
